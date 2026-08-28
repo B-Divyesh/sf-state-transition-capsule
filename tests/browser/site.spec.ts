@@ -29,6 +29,42 @@ test("keeps the comparison path available offline", async ({ page, context }) =>
   await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
 });
 
+test("supports the two-run workflow from the keyboard", async ({ page }) => {
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Skip to main content" })).toBeFocused();
+
+  const sample = page.getByRole("button", { name: "Load two-run example" });
+  await sample.focus();
+  await page.keyboard.press("Space");
+  const compare = page.getByRole("button", { name: "Compare runs" });
+  await expect(compare).toBeEnabled();
+  await compare.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
+});
+
+test("production offline shell installs, updates its controller, and reloads offline", async ({ page, context }) => {
+  test.skip(process.env.PLAYWRIGHT_PRODUCTION !== "1", "requires the built site served by Vite preview");
+
+  await page.goto("/");
+  await page.waitForFunction(async () => {
+    const registration = await navigator.serviceWorker.ready;
+    return registration.active?.state === "activated";
+  });
+
+  // A worker controls its clients after a navigation, not its first registration page.
+  await page.reload();
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Find the first state change that broke the second run." })).toBeVisible();
+  await page.getByRole("button", { name: "Load two-run example" }).click();
+  await page.getByRole("button", { name: "Compare runs" }).click();
+  await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
+});
+
 test("restores and verifies a Studio license", async ({ page }) => {
   await page.route("**/products/state-transition-capsule/verify?license=test-token", (route) => route.fulfill({
     status: 200,

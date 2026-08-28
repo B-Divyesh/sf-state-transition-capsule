@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const production = process.env.PLAYWRIGHT_PRODUCTION === "1";
+
 export default defineConfig({
   testDir: "./tests/browser",
   fullyParallel: true,
@@ -13,7 +15,7 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["iPhone 13"], browserName: "chromium", viewport: { width: 390, height: 844 } } }
   ],
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1",
+    command: production ? "npm run preview -- --host 127.0.0.1" : "npm run dev -- --host 127.0.0.1",
     url: "http://127.0.0.1:4173",
     reuseExistingServer: true,
     timeout: 30_000
