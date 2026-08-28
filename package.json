@@ -1,0 +1,52 @@
+{
+  "name": "state-transition-capsule",
+  "version": "0.1.0",
+  "description": "Capture, redact, replay, and compare application state transitions.",
+  "type": "module",
+  "main": "./dist/package/index.cjs",
+  "module": "./dist/package/index.js",
+  "types": "./dist/package/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/package/index.d.ts",
+      "import": "./dist/package/index.js",
+      "require": "./dist/package/index.cjs"
+    }
+  },
+  "files": [
+    "dist/package",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "dev": "vite --config vite.config.ts",
+    "build:lib": "tsup src/index.ts --format esm,cjs --dts --out-dir dist/package",
+    "build:site": "vite build --config vite.config.ts",
+    "build": "npm run clean && npm run build:lib && npm run build:site",
+    "test:unit": "vitest run --root .",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run build && npm run test:e2e"
+  },
+  "keywords": [
+    "state",
+    "debugging",
+    "replay",
+    "diff",
+    "local-first"
+  ],
+  "author": "Sociobot (Param Factory)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.58.2",
+    "tsup": "8.3.6",
+    "typescript": "5.7.3",
+    "vite": "6.1.0",
+    "vitest": "3.0.5"
+  }
+}
