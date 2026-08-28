@@ -38,7 +38,12 @@ function cloneJSON(value: unknown, seen = new WeakSet<object>(), path = "$"): JS
 
   const result: Record<string, JSONValue> = {};
   for (const [key, item] of Object.entries(value)) {
-    result[key] = cloneJSON(item, seen, `${path}.${key}`);
+    const cloned = cloneJSON(item, seen, `${path}.${key}`);
+    if (key === "__proto__") {
+      Object.defineProperty(result, key, { value: cloned, enumerable: true, configurable: true, writable: true });
+    } else {
+      result[key] = cloned;
+    }
   }
   seen.delete(value);
   return result;
@@ -343,12 +348,32 @@ export function validateCapsule(value: unknown): ValidationResult {
   if (typeof value.id !== "string" || !value.id) errors.push("id must be a non-empty string");
   if (typeof value.name !== "string" || !value.name) errors.push("name must be a non-empty string");
   if (typeof value.createdAt !== "string" || Number.isNaN(Date.parse(value.createdAt))) errors.push("createdAt must be an ISO date string");
-  if (!isRecord(value.initial) || !("state" in value.initial)) errors.push("initial snapshot is missing");
+  if (!isRecord(value.metadata)) errors.push("metadata must be an object");
+  if (!Array.isArray(value.redactions) || value.redactions.some((path) => typeof path !== "string")) errors.push("redactions must be an array of paths");
+  if (!isRecord(value.retention) || !Number.isInteger(value.retention.maxTransitions) || typeof value.retention.includeEvents !== "boolean") {
+    errors.push("retention policy is invalid");
+  }
+  const validateSnapshot = (snapshot: unknown, path: string): void => {
+    if (!isRecord(snapshot) || !("state" in snapshot)) {
+      errors.push(`${path} is missing`);
+      return;
+    }
+    if (typeof snapshot.label !== "string") errors.push(`${path}.label must be a string`);
+    if (typeof snapshot.capturedAt !== "string" || Number.isNaN(Date.parse(snapshot.capturedAt))) errors.push(`${path}.capturedAt must be an ISO date string`);
+    if (typeof snapshot.hash !== "string") errors.push(`${path}.hash must be a string`);
+  };
+  validateSnapshot(value.initial, "initial snapshot");
   if (!Array.isArray(value.transitions)) errors.push("transitions must be an array");
   else {
     value.transitions.forEach((transition, index) => {
       if (!isRecord(transition)) errors.push(`transitions[${index}] must be an object`);
-      else if (!isRecord(transition.after) || !("state" in transition.after)) errors.push(`transitions[${index}].after is missing`);
+      else {
+        if (!Number.isInteger(transition.sequence) || Number(transition.sequence) < 1) errors.push(`transitions[${index}].sequence must be a positive integer`);
+        if (typeof transition.name !== "string" || !transition.name) errors.push(`transitions[${index}].name must be a non-empty string`);
+        if (typeof transition.capturedAt !== "string" || Number.isNaN(Date.parse(transition.capturedAt))) errors.push(`transitions[${index}].capturedAt must be an ISO date string`);
+        validateSnapshot(transition.before, `transitions[${index}].before`);
+        validateSnapshot(transition.after, `transitions[${index}].after`);
+      }
     });
   }
   try {

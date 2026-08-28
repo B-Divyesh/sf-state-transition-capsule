@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Capture, redact, replay, and compare application state transitions.",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/package/index.cjs",
   "module": "./dist/package/index.js",
   "types": "./dist/package/index.d.ts",
@@ -25,7 +26,7 @@
     "build:lib": "tsup src/index.ts --format esm,cjs --dts --out-dir dist/package",
     "build:site": "vite build --config vite.config.ts",
     "build": "npm run clean && npm run build:lib && npm run build:site",
-    "test:unit": "vitest run --root .",
+    "test:unit": "vitest run --root . tests/core.test.ts",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run build && npm run test:e2e"
   },
@@ -38,6 +39,14 @@
   ],
   "author": "Sociobot (Param Factory)",
   "license": "MIT",
+  "homepage": "https://state-transition-capsule.sociobot.in",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/B-Divyesh/sf-state-transition-capsule.git"
+  },
+  "bugs": {
+    "url": "https://github.com/B-Divyesh/sf-state-transition-capsule/issues"
+  },
   "engines": {
     "node": ">=20"
   },

@@ -110,4 +110,12 @@ describe("validation and state diff", () => {
       { path: "$.list[2]", kind: "added", actual: 4 }
     ]);
   });
+
+  it("preserves JSON keys named __proto__ without changing object prototypes", () => {
+    const state = JSON.parse('{"__proto__":{"polluted":true},"safe":1}');
+    const recorder = createRecorder({ name: "prototype safety", id: "safe", initialState: state, now: clock });
+    const capsule = recorder.capsule();
+    expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
+    expect(JSON.stringify(capsule.initial.state)).toContain('"__proto__"');
+  });
 });

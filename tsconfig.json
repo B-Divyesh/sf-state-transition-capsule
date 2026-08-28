@@ -9,7 +9,7 @@
     "declaration": true,
     "skipLibCheck": true,
     "lib": ["ES2022", "DOM"],
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "vite/client", "node"]
   },
   "include": ["src", "site", "tests", "vite.config.ts", "playwright.config.ts"]
 }

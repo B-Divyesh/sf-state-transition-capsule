@@ -379,6 +379,6 @@ rememberToggle.addEventListener("change", () => {
   }
 });
 
-if ("serviceWorker" in navigator && location.protocol !== "file:") {
+if (import.meta.env.PROD && "serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", () => void navigator.serviceWorker.register("/sw.js"));
 }

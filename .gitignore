@@ -2,5 +2,7 @@ node_modules/
 dist/
 test-results/
 playwright-report/
+graphify-out/
+.factory/evidence/
 *.tgz
 .DS_Store
