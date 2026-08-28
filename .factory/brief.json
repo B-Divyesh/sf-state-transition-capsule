@@ -1,0 +1,11 @@
+{
+  "slug": "state-transition-capsule",
+  "title": "State Transition Capsule",
+  "territory": "devtools-data",
+  "user": "Application developers debugging a workflow that succeeds once but fails or degrades on subsequent runs because persisted client or server state changed.",
+  "smallest_useful_product": "An npm library and local viewer that records declared state snapshots plus domain events, redacts selected fields, replays transitions, and diffs the first divergent state.",
+  "success_measure": "A pilot can package a two-run failure and identify the first divergent persisted field in under 15 minutes on a second machine.",
+  "artifact_class": "library-npm",
+  "monetization": "freemium",
+  "constraints": "Local operation, field-level redaction, retention controls, and replay that never executes arbitrary effects."
+}
