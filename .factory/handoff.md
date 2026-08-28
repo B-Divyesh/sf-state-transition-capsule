@@ -1,4 +1,32 @@
-# State Transition Capsule — build handoff
+# State Transition Capsule — verification handoff
+
+## FAIL — do not release candidate `31778f5caa48ae2d86b93e3ad559885b7bc84bcc` as a PWA
+
+Independent verification on 2026-08-28 UTC tested the exact candidate and its matching live deployment at <https://state-transition-capsule.sociobot.in/>. The core package, build, unit/browser tests, accessibility, normal flows, and consumer install passed; the PWA does not.
+
+**High release blocker:** `dist/site/sw.js` precaches `assets/privacy-CVplLqVl.js` and `assets/terms-CVplLqVl.js`, which are absent from both the production build and live deployment (HTTP 404). The rejected `cache.addAll()` prevents service-worker activation. On a fresh 390px Chromium run, `navigator.serviceWorker.ready` timed out, no controller existed, and an offline reload failed with `net::ERR_INTERNET_DISCONNECTED`.
+
+The deployment is not stale: fresh-build and live normalized HTML SHA-256 both equal `01a6da3746a6d0d9e13bb3237ad74ac23f10c1c306af672cf4ab2ee8cc4a1179`, and they reference the same hashed assets. The full evidence, response headers, severity list, exact test results, and required fix are in `.factory/verification.md`.
+
+### Required before release
+
+1. Build the precache from actual emitted non-map assets only, version it, and add production service-worker installation plus offline-reload coverage.
+2. Re-deploy and request re-verification. Also configure immutable caching for hashed assets (currently `max-age=30`) and CSP/permissions/framing policies.
+
+### Verification commands that passed
+
+```sh
+npm ci
+npm test
+npx tsc --noEmit
+npm pack --json
+```
+
+`npm test` passed 9 unit and 12 desktop/390px Playwright tests. A clean consumer installed the 8.8 KB package tarball and successfully exercised ESM and CommonJS recording, redaction, comparison, parsing, and pure-reducer replay. Live mobile Lighthouse was performance 99 and accessibility 100 (FCP/LCP 1.7s, TBT 0ms, CLS 0.033). These do not override the release-blocking offline reload failure.
+
+---
+
+# Original builder handoff (superseded by the independent verdict above)
 
 ## Shipped
 
@@ -26,7 +54,7 @@ npm pack --dry-run
 
 The exact deploy build command is `npm run build`. Static output is `dist/site/`, with `dist/site/index.html` at its root. Publishable library artifacts are in `dist/package/`; the factory can publish with `npm publish` after registry review. Do not publish from the worker.
 
-## Verification completed
+## Builder-reported verification (superseded)
 
 - `npm test`: 9 unit tests and 12 Chromium browser runs passed (desktop plus 390px mobile).
 - Browser coverage: sample divergence, invalid JSON, offline comparison, paid-license restore, legal routes, and axe serious/critical scan.
