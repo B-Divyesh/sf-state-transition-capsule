@@ -27,7 +27,7 @@
     "build:lib": "tsup src/index.ts --format esm,cjs --dts --out-dir dist/package",
     "build:site": "vite build --config vite.config.ts",
     "build": "npm run clean && npm run build:lib && npm run build:site",
-    "test:unit": "vitest run --root . tests/core.test.ts",
+    "test:unit": "vitest run --root . tests/core.test.ts tests/claims-manifest.test.ts",
     "test:artifacts": "vitest run --root . tests/build-artifacts.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:production": "PLAYWRIGHT_PRODUCTION=1 playwright test tests/browser/offline.spec.ts",

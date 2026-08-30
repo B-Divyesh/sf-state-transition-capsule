@@ -8,6 +8,9 @@ Audited 30 August 2026. Counts treat hyphenated terms and paths as one word. Eve
  9  Find the state change that broke the second run.
 17  For developers debugging repeat-run failures, it compares two state histories and names the first field that changed.
  8  Loads two sample runs in a separate demo.
+ 7  Capsules stay in this tab by default.
+ 6  Works offline after the first visit.
+ 7  Free core tools · Studio costs $39 once.
  3  Two recorded runs.
  3  One exact divergence.
  9  Load a known-good capsule and the run that drifted.
@@ -21,12 +24,11 @@ Audited 30 August 2026. Counts treat hyphenated terms and paths as one word. Eve
 10  Replace exact or wildcard paths before anything reaches the capsule.
 12  Align snapshots in order and stop at the first changed JSON path.
  7  A narrow API for evidence you own.
- 7  ESM, CommonJS, and TypeScript declarations ship together.
- 2  No telemetry.
- 3  No remote runtime.
+10  ESM, CommonJS, TypeScript declarations, and no runtime dependencies ship together.
  5  Keep a local case history.
 10  The open package and viewer handle the complete capture-and-compare workflow.
 13  Studio adds saved comparison labels and local history for teams who revisit incidents.
+ 5  $39 one time · per user.
 11  Checkout and refunds are handled by Sociobot/Dodo, the merchant of record.
  6  A refunded license is revoked automatically.
  7  The free comparison bench remains fully available.

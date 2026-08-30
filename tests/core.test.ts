@@ -34,6 +34,7 @@ describe("createRecorder", () => {
     const capsule = recorder.capsule();
 
     expect(capsule.initial.state).toMatchObject({ auth: { token: "[REDACTED]" } });
+    expect(capsule.initial.state).toMatchObject({ profile: { password: "[REDACTED]" } });
     expect(capsule.transitions[0]?.event).toMatchObject({ password: "[REDACTED]" });
     expect(capsule.metadata.password).toBe("[REDACTED]");
     expect(initial.auth.token).toBe("secret");

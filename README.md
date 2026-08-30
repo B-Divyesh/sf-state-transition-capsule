@@ -75,13 +75,13 @@ npm run build        # package + site into dist/
 npm pack             # ready-to-publish tarball
 ```
 
-`npm run build:site` writes the static deployment to `dist/site/`. The `/demo` route uses bundled sample data and a separate `demo:` storage namespace. No analytics, remote fonts, runtime CDNs, accounts, or uploads are used. Imported capsules stay in the current browser tab unless the user explicitly enables local retention.
+`npm run build:site` writes the static deployment to `dist/site/`. The `/demo` route uses bundled sample data and a separate `demo:` storage namespace. The standard and demo viewer make no telemetry, API, or third-party runtime request. Imported capsules stay in the current browser tab unless the user explicitly enables local retention.
 
 ## Format and API
 
 The small public surface is `createRecorder`, `compareCapsules`, `replayCapsule`, `parseCapsule`, `stringifyCapsule`, and `validateCapsule`, plus exported TypeScript types. Capsules use the versioned media marker `state-transition-capsule/v1`.
 
-The free package and viewer include recording, JSON export/import, redaction, comparison, and deterministic replay. Capsule Studio is a one-time purchase for local history and saved comparison labels. It never gates export, privacy, accessibility, or safety.
+The free package and viewer include recording, JSON export/import, redaction, comparison, and deterministic replay. Capsule Studio costs $39 per user as a one-time purchase for local history and saved comparison labels. The comparison workbench stays available without Studio.
 
 ## Privacy and security
 

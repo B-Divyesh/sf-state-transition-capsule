@@ -18,7 +18,7 @@
     "claim": "Capsule comparison stays in the browser and does not upload capsule data.",
     "where": "landing facts, privacy page, README",
     "test": "npm run test:e2e -- --grep @claim:local-processing",
-    "sandbox": "record every request during the complete /demo comparison and assert that all requests are same-origin"
+    "sandbox": "record every request during the complete /demo comparison and assert that every request is a same-origin GET"
   },
   {
     "id": "offline-reload",
@@ -31,21 +31,21 @@
     "id": "redaction",
     "claim": "Configured fields are redacted before state, event, and metadata values enter a capsule.",
     "where": "landing page, README",
-    "test": "npm run test:unit -- --grep @claim:redaction",
+    "test": "npm run test:unit -- --testNamePattern @claim:redaction",
     "sandbox": "record known secrets with exact and wildcard paths; assert capsule output is redacted and source input is unchanged"
   },
   {
     "id": "pure-replay",
     "claim": "Replay runs only the reducer supplied by the application and reports the first divergence.",
     "where": "landing page, README",
-    "test": "npm run test:unit -- --grep @claim:pure-replay",
+    "test": "npm run test:unit -- --testNamePattern @claim:pure-replay",
     "sandbox": "replay a bundled capsule through a supplied pure reducer and assert matching and divergent results"
   },
   {
     "id": "package-formats",
     "claim": "The package ships working ESM, CommonJS, and TypeScript declarations with no runtime dependencies.",
     "where": "API section, README",
-    "test": "npm run build && npm run test:artifacts -- --grep @claim:package-formats",
+    "test": "npm run build && npm run test:artifacts -- --testNamePattern @claim:package-formats",
     "sandbox": "build from source, load ESM and CommonJS outputs, inspect declarations, and assert no runtime dependency manifest"
   },
   {
@@ -54,5 +54,26 @@
     "where": "Studio section, terms, README",
     "test": "npm run test:e2e -- --grep @claim:license-restore",
     "sandbox": "mock the documented Sociobot verification response, restore a token, and assert Studio history and the free comparison control"
+  },
+  {
+    "id": "tab-local-storage",
+    "claim": "Imported capsules stay in the current tab unless Studio local retention is enabled.",
+    "where": "landing facts, workbench, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:tab-local-storage",
+    "sandbox": "fresh browser context; import two valid capsules without a license, assert no storage keys, reload, and assert both import bays are empty"
+  },
+  {
+    "id": "no-telemetry-runtime",
+    "claim": "Without a license action, standard and demo visits make no telemetry, API, or third-party runtime request.",
+    "where": "privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:no-telemetry-runtime",
+    "sandbox": "fresh browser context with no license; compare bundled sample on / and /demo while recording requests, allowing only same-origin GET navigations and static assets"
+  },
+  {
+    "id": "studio-price",
+    "claim": "Capsule Studio costs $39 as a one-time purchase per user.",
+    "where": "landing facts, Studio section, terms, README",
+    "test": "npm run test:e2e -- --grep @claim:studio-price",
+    "sandbox": "fresh browser context; assert the landing price, exact hosted checkout URL, and the matching terms disclosure"
   }
 ]
