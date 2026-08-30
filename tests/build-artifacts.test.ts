@@ -44,8 +44,10 @@ describe("production artifacts", () => {
   it("preloads the emitted display font to avoid first-view layout movement", () => {
     const home = readFileSync(resolve(siteRoot, "index.html"), "utf8");
     const match = home.match(/<link rel="preload" href="([^\"]+\.woff2)" as="font" type="font\/woff2" crossorigin\s*\/?\s*>/);
-    expect(match?.[1]).toBeDefined();
-    expect(existsSync(outputPath(match![1]))).toBe(true);
+    const preloadUrl = match?.[1];
+    expect(preloadUrl).toBeDefined();
+    if (!preloadUrl) throw new Error("Display-font preload is missing");
+    expect(existsSync(outputPath(preloadUrl))).toBe(true);
   });
 
   it("@claim:package-formats loads ESM and CommonJS and ships declarations", async () => {
