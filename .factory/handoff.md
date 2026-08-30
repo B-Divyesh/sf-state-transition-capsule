@@ -1,6 +1,6 @@
 # State Transition Capsule — repair handoff
 
-## Release status: ready to deploy
+## Release status: PASS — deployed
 
 This repair addresses the independent verification at commit
 `0684a9bfc938c5098f2ef2321d6cc8b642fe6487` for candidate
@@ -73,12 +73,33 @@ The production build writes `dist/package` and `dist/site`; initial JS is
 fonts total 72.03 KB, and the hero image is 79.22 KB. All stay within the
 static-product budgets.
 
-## Deployment and known limits
+## Deployment and live verification
 
-The source repair is committed and pushed before deployment. Deploy only
-`sf-state-transition-capsule` from `dist/site` with the factory static-site
-configuration. After deployment, verify the live site identity, response
-headers, 180px touch icon, and production offline reload before release.
+Commit `c327b05` was pushed to `main` and deployed from `dist/site` to the
+permitted `sf-state-transition-capsule` static app on 2026-08-30 (deployment
+`10cbd88e-b218-4c64-86b1-b922848380a1`). The live URL is
+<https://state-transition-capsule.sociobot.in/>.
+
+The following local and live SHA-256 values match byte for byte:
+
+- `index.html`: `fa634c05a5e5773a7401c679de793958b1696fb1c7696c6fa08b0ca011cbf250`
+- `sw.js`: `61c19f287427a826af57a10d337d663ab0e159faf9d798f28caaf3cf37d2132b`
+- `assets/home-5qljGDne.js`: `07f1f154332ce47e34908722487bb4644ee550e483846eaf1f786d7158b916c0`
+- `assets/styles-DMNSYhkY.css`: `69669437d0ffc8693420b8e5a72a4fec937ab5a215a54d795a7d176cd777ed46`
+
+The deployed touch icon is a PNG at exactly 180×180. Live `/demo` passed the
+factory URL verifier in 1.027s with zero console errors, `lang=en`, one `h1`,
+one `main`, valid image alt text, and named buttons. Live responses provide
+the CSP with `frame-ancestors 'none'`, Permissions-Policy, nosniff, DENY frame
+policy, strict referrer policy, immutable hashed-asset caching, and `no-cache`
+for `sw.js`.
+
+A fresh 390×844 live Chromium context activated and controlled the worker,
+completed `registration.update()`, then reloaded `/demo` offline with
+`$.report.chart` visible. The flow made only same-origin GET requests and
+produced no console or page errors.
+
+## Known limits
 
 No external billing or refund endpoint was contacted: this work order permits
 only the product's `sf-state-transition-capsule` resource. The removed
