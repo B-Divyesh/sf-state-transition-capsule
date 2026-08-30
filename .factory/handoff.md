@@ -1,114 +1,33 @@
-# State Transition Capsule — repair handoff
+# State Transition Capsule — independent verification handoff
 
-## Release status: PASS — deployed
+## Release status: FAIL
 
-This repair addresses the independent verification at commit
-`0684a9bfc938c5098f2ef2321d6cc8b642fe6487` for candidate
-`ccc428c6aa8d63d73cd30a17ce74972e59355ada`.
+Candidate `bbcee08062851b6391184a52c8e253d5cd939c8e` was independently verified on 30 August 2026 against <https://state-transition-capsule.sociobot.in/>. The live deployment matches the candidate build byte for byte, and the functional, privacy, offline, package, and performance checks pass. Release is blocked by a reproducible **serious Axe WCAG 2.5.3 violation** on the install/copy control.
 
-## Reproduced findings and repairs
+Full evidence and remediation are in [`.factory/verification-4.md`](verification-4.md).
 
-1. **Unlisted bounded-retention promise** — after a clean `npm ci`, the exact
-   selector `npm run test:unit -- --testNamePattern @claim:bounded-retention`
-   passed with every test skipped. `.factory/claims.json` had no matching ID.
-   The manifest now contains `bounded-retention` and the one tagged Vitest
-   regression records three transitions with a limit of two. It proves that
-   transitions 2 and 3 remain and that the boundary state is `{ count: 1 }`.
-2. **Unprovable automatic-refund-revocation promise** — the product sandbox
-   cannot prove an external merchant refund event, so the automatic-revocation
-   wording was removed from the landing page and Terms. The remaining
-   disclosure says that Sociobot/Dodo is the merchant of record and that
-   hosted checkout presents current payment and refund terms.
-3. **Missing Apple touch icon** — added the original
-   `site/public/apple-touch-icon.png`, a 180×180 PNG rendering of the
-   hand-made signal-trace favicon. Every source document now references it
-   with `rel="apple-touch-icon" sizes="180x180"`. A built-artifact test checks
-   the PNG signature and dimensions and every route reference.
+## Blocking defects
 
-Asset provenance is recorded in [`.factory/design.md`](design.md). The image
-was rendered locally with the repository's pinned Playwright Chromium because
-the worker image does not have an SVG raster delegate; no remote image or
-third-party asset was used.
+1. **High:** `.install-command` visibly says `npm i state-transition-capsule` and `Copy`, but its accessible name is `Copy npm install command`. Axe 4.10.2 reports `label-content-name-mismatch` as serious on home and demo, desktop and mobile. Lighthouse independently reports the same failed audit.
+2. **Medium:** visible 390px targets below 44×44 include the 48×32 brand link, 40×44 Demo link, 37×16 and 45×16 Studio legal links, and 42×44 footer Terms link.
+3. **Medium:** the first-screen action note is 13px and the three fact lines are 12px, below the supplied accessibility baseline and the product's own 16px design minimum.
+4. **Low:** Privacy and Terms omit the required Open Graph and Twitter metadata.
 
-## Verification
+## What passed
 
-All commands ran successfully from this repair checkout:
+- All **12/12** commands in `.factory/claims.json`, run exactly after `npm ci`.
+- `npm run typecheck`, `npm run lint`, `npm audit --audit-level=high`, `npm test`, and a separate `npm run build`.
+- `npm test`: 11 unit/manifest, 5 artifact, 30 development browser tests (2 expected production-only skips), and 2 production offline tests.
+- Packed 9,219-byte npm artifact installed into a clean consumer; ESM/CommonJS, declarations, redaction, retention, comparison, validation, and replay exercised successfully.
+- Cold first-read and one-click demo; normal, invalid, >5 MiB, recovery, keyboard, reduced-motion, 390px, copy, and 200% zoom flows.
+- Same-origin-only GET request log; no analytics, third-party runtime, or capsule upload.
+- Live service-worker activation/update and offline `/demo` reload.
+- Security headers and immutable hashed-asset caching.
+- Lighthouse mobile: performance 98, accessibility 100, best practices 100, SEO 100; LCP 1.7s, TBT 150ms, CLS 0. The serious named audit still fails despite the rounded accessibility score.
+- Factory URL verifier: 200, 692ms load, correct title/lang/main/h1/alt/button names, zero console errors.
 
-```sh
-npm ci                              # 100 packages; 0 vulnerabilities
-npm run typecheck
-npm run lint
-npm audit --audit-level=high         # 0 vulnerabilities
-npm test                             # 11 unit/manifest, 5 artifact,
-                                     # 30 development browser + 2 expected
-                                     # production-only skips, 2 production
-                                     # service-worker browser tests
-npm pack --json                      # 9,219-byte ready-to-publish tarball
-```
+## Scope and known limits
 
-Every one of the 12 commands listed in `.factory/claims.json` was also run
-exactly. All passed, including the new
-`@claim:bounded-retention` selector, the desktop and 390px browser claim
-projects, and the production service-worker offline-reload/update check.
+No product code was changed. The external Sociobot billing endpoint was not contacted or rate-tested because the work order forbids connecting to resources outside `sf-state-transition-capsule`; the static product has no owned server endpoint or sign-in. Mocked tests cover license restore, and source review confirms the daily verdict cache.
 
-A clean temporary consumer installed the packed tarball and verified:
-
-- ESM recording and comparison report `$.count` as the first divergence.
-- CommonJS pure reducer replay returns `ok: true`.
-
-The full browser suite covers invalid JSON recovery, the 5 MiB safety limit,
-demo isolation, keyboard workflow, reduced motion, desktop and 390px mobile
-layouts, no-telemetry request logging, and Playwright Axe scans with no
-serious or critical violations. The production artifact test verifies the
-security-response configuration and immutable hashed asset caching.
-
-`/opt/fleet/lib/verify-url.sh` was run against the built local `/demo`:
-
-- HTTP 200; title `Demo — State Transition Capsule`; `lang=en`; one `h1` and
-  one `main`; no missing image alt text or unlabeled buttons.
-- 0 console/page errors; desktop load measured 663ms.
-
-The production build writes `dist/package` and `dist/site`; initial JS is
-17.55 KB raw / 6.58 KB gzip, CSS is 18.37 KB raw / 5.14 KB gzip, self-hosted
-fonts total 72.03 KB, and the hero image is 79.22 KB. All stay within the
-static-product budgets.
-
-## Deployment and live verification
-
-Commit `c327b05` was pushed to `main` and deployed from `dist/site` to the
-permitted `sf-state-transition-capsule` static app on 2026-08-30 (deployment
-`10cbd88e-b218-4c64-86b1-b922848380a1`). The live URL is
-<https://state-transition-capsule.sociobot.in/>.
-
-The following local and live SHA-256 values match byte for byte:
-
-- `index.html`: `fa634c05a5e5773a7401c679de793958b1696fb1c7696c6fa08b0ca011cbf250`
-- `sw.js`: `61c19f287427a826af57a10d337d663ab0e159faf9d798f28caaf3cf37d2132b`
-- `assets/home-5qljGDne.js`: `07f1f154332ce47e34908722487bb4644ee550e483846eaf1f786d7158b916c0`
-- `assets/styles-DMNSYhkY.css`: `69669437d0ffc8693420b8e5a72a4fec937ab5a215a54d795a7d176cd777ed46`
-
-The deployed touch icon is a PNG at exactly 180×180. Live `/demo` passed the
-factory URL verifier in 1.027s with zero console errors, `lang=en`, one `h1`,
-one `main`, valid image alt text, and named buttons. Live responses provide
-the CSP with `frame-ancestors 'none'`, Permissions-Policy, nosniff, DENY frame
-policy, strict referrer policy, immutable hashed-asset caching, and `no-cache`
-for `sw.js`.
-
-A fresh 390×844 live Chromium context activated and controlled the worker,
-completed `registration.update()`, then reloaded `/demo` offline with
-`$.report.chart` visible. The flow made only same-origin GET requests and
-produced no console or page errors.
-
-## Known limits
-
-No external billing or refund endpoint was contacted: this work order permits
-only the product's `sf-state-transition-capsule` resource. The removed
-automatic-refund sentence is intentionally not a product promise; the hosted
-merchant's checkout and refund terms control.
-
-## Publish and operate
-
-```sh
-npm pack
-# The factory owns registry credentials; do not publish from this worker.
-```
+After remediation, rerun every claims command, full local gates, explicit `label-content-name-mismatch` Axe scans, 390px target measurements, and live deployment identity/offline checks.
