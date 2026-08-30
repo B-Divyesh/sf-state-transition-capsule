@@ -1,73 +1,94 @@
-# State Transition Capsule — verification handoff
+# State Transition Capsule — repair handoff
 
-## FAIL — do not release candidate `31778f5caa48ae2d86b93e3ad559885b7bc84bcc` as a PWA
+## Release status
 
-Independent verification on 2026-08-28 UTC tested the exact candidate and its matching live deployment at <https://state-transition-capsule.sociobot.in/>. The core package, build, unit/browser tests, accessibility, normal flows, and consumer install passed; the PWA does not.
+PASS. The repair for verifier report `f04ddbaf1463bbf3f9600287634663009a85807b` is committed, pushed to `main`, and deployed to <https://state-transition-capsule.sociobot.in/>.
 
-**High release blocker:** `dist/site/sw.js` precaches `assets/privacy-CVplLqVl.js` and `assets/terms-CVplLqVl.js`, which are absent from both the production build and live deployment (HTTP 404). The rejected `cache.addAll()` prevents service-worker activation. On a fresh 390px Chromium run, `navigator.serviceWorker.ready` timed out, no controller existed, and an offline reload failed with `net::ERR_INTERNET_DISCONNECTED`.
+Deployed source HEAD before this evidence-only handoff update: `3f45893c` (`fix: normalize demo deployment route`). The deployment target was only the existing `sf-state-transition-capsule` Static Web App. No shared database, key vault, unrelated service, DNS, or billing resource was read or changed.
 
-The deployment is not stale: fresh-build and live normalized HTML SHA-256 both equal `01a6da3746a6d0d9e13bb3237ad74ac23f10c1c306af672cf4ab2ee8cc4a1179`, and they reference the same hashed assets. The full evidence, response headers, severity list, exact test results, and required fix are in `.factory/verification.md`.
+## Verifier failure reproduced
 
-### Required before release
+Candidate `31778f5caa48ae2d86b93e3ad559885b7bc84bcc` was exported to a fresh temporary directory, installed with `npm ci`, and built. Its `dist/site/sw.js` listed these absent files:
 
-1. Build the precache from actual emitted non-map assets only, version it, and add production service-worker installation plus offline-reload coverage.
-2. Re-deploy and request re-verification. Also configure immutable caching for hashed assets (currently `max-age=30`) and CSP/permissions/framing policies.
+- `/assets/privacy-CVplLqVl.js`
+- `/assets/terms-CVplLqVl.js`
 
-### Verification commands that passed
+This exactly reproduced the report: `cache.addAll()` could not complete, so the service worker could not activate and an offline reload could not work.
 
-```sh
-npm ci
-npm test
-npx tsc --noEmit
-npm pack --json
-```
+## Repairs
 
-`npm test` passed 9 unit and 12 desktop/390px Playwright tests. A clean consumer installed the 8.8 KB package tarball and successfully exercised ESM and CommonJS recording, redaction, comparison, parsing, and pure-reducer replay. Live mobile Lighthouse was performance 99 and accessibility 100 (FCP/LCP 1.7s, TBT 0ms, CLS 0.033). These do not override the release-blocking offline reload failure.
+- Generate the precache in Vite's `closeBundle` phase by scanning final emitted files. Source maps, the worker itself, and deployment configuration are excluded.
+- Derive the cache version from every precached path and file byte. Changes to unhashed HTML or images now roll the shell forward too.
+- Add an artifact regression that rejects the two exact phantom chunks, any source map, and any URL without a built file.
+- Add an isolated production Playwright test that waits for worker activation, reloads until controlled, runs `registration.update()`, goes offline, reloads `/demo`, and verifies `$.report.chart`. It runs at desktop and 390 px.
+- Configure one-year immutable caching for `/assets/*` and `no-cache` for `/sw.js`.
+- Add response-header CSP, Permissions-Policy, `frame-ancestors 'none'`, `X-Frame-Options: DENY`, `nosniff`, and strict referrer policy.
+- Replace the broad navigation fallback with an exact `/demo` rewrite. Unknown paths now return HTTP 404 with the designed `404.html` page.
+- Add the one-click `/demo` sandbox, automatic realistic comparison, persistent demo banner, reset/exit actions, and separate `demo:` storage namespace.
+- Add `.factory/claims.json`, `.factory/demo.md`, and `.factory/copy-audit.md` with one regression tag per claim.
+- Fix the comparison result's empty-state overlap and cover it in the demo test.
+- Add route metadata, consistent navigation/footer content, larger link targets, a visible file-input focus treatment, an accessible license live region, and a product-derived 1200×630 social image.
 
----
+## Verification evidence
 
-# Original builder handoff (superseded by the independent verdict above)
-
-## Shipped
-
-- A zero-runtime-dependency TypeScript npm library at version `0.1.0`, built as ESM, CommonJS, and `.d.ts` declarations.
-- A recorder for named snapshots and domain events with input cloning, exact/wildcard field redaction (`*` and `**`), bounded transition retention, optional event omission, and stable state fingerprints.
-- Capsule validation and JSON parse/stringify helpers with malformed-input and prototype-pollution safeguards.
-- Deterministic replay against an application-supplied pure reducer. The viewer does not load capsule code or execute recorded effects.
-- Two-capsule comparison that returns the first divergent transition and exact JSON path, plus all changed fields at that state.
-- A local-only viewer with file picker and drag/drop import, a working two-run example, helpful empty/error/loading/offline states, responsive 390px layout, and keyboard paths.
-- Capsule Studio paid unlock via the Sociobot checkout/verify contract. The $39 one-time tier adds opt-in local run retention and labelled comparison history. Free capture, redaction, comparison, export, and safety behavior remain ungated.
-- `/privacy/` and `/terms/`, an offline service worker, robots/sitemap files, self-hosted fonts, and an original 79 KB WebP hero illustration.
-
-The mid-century instrument-panel system and generated-image provenance are recorded in `.factory/design.md`. The source PNG was removed after the optimized WebP was produced; the factory deployment metadata remains in `.factory/instrument-trace.provenance.json`.
-
-## Run and verify
-
-Requires Node.js 20+.
+### Clean source and automated gates
 
 ```sh
-npm ci
+npm ci --no-audit --no-fund
 npm test
-npm run build
-npm pack --dry-run
+npm run lint
+npm audit --audit-level=high
 ```
 
-The exact deploy build command is `npm run build`. Static output is `dist/site/`, with `dist/site/index.html` at its root. Publishable library artifacts are in `dist/package/`; the factory can publish with `npm publish` after registry review. Do not publish from the worker.
+- Clean install: 100 packages installed from `package-lock.json`.
+- Unit: 9 passed.
+- Built-artifact regression: 3 passed.
+- Development browser suite: 24 passed across desktop Chromium and 390×844 Chromium; the 2 production-only cases were expected skips.
+- Production service-worker suite: 2 passed across desktop and 390×844 Chromium.
+- TypeScript/lint: passed.
+- Audit: 0 vulnerabilities.
+- Axe Playwright scans on `/` and `/demo`: no serious or critical violations in either viewport.
+- Browser coverage includes keyboard activation, invalid and over-limit files, demo isolation, same-origin request logging, legal/404 routes, touch target height, horizontal overflow, reduced motion, license restore, and console/page errors.
 
-## Builder-reported verification (superseded)
+### Package and consumer
 
-- `npm test`: 9 unit tests and 12 Chromium browser runs passed (desktop plus 390px mobile).
-- Browser coverage: sample divergence, invalid JSON, offline comparison, paid-license restore, legal routes, and axe serious/critical scan.
-- `npx tsc --noEmit`: passed.
-- `npm audit`: 0 vulnerabilities.
-- `npm pack --dry-run`: 8-file package, 8.8 KB compressed / 44.5 KB unpacked.
-- ESM and CommonJS import smoke tests: passed.
-- Factory `verify-url.sh` against the production preview: HTTP 200, no console errors, `lang`, title, one `h1`, `main`, alt text, and labelled buttons present.
-- Lighthouse 12.8.2 mobile: performance **99**, accessibility **100**, best practices **100**, SEO **100**. FCP 1.5s, LCP 2.0s, TBT 0ms, CLS 0.033.
-- Production payload: initial app JS 16.7 KB, CSS 17.3 KB, fonts 72.0 KB, hero WebP 79.2 KB—all below budget.
+`npm pack --json` produced `state-transition-capsule-0.1.0.tgz`: 9,203 bytes compressed, 45,492 bytes unpacked, 8 files. A fresh temporary consumer installed the tarball and exercised both ESM and CommonJS. ESM located `$.n`; CommonJS produced `state-transition-capsule/v1`. Declarations are present, and the package has no runtime dependencies. The factory may publish with `npm publish`; this worker did not publish.
 
-## Known gaps and next steps
+### Production build budgets
 
-- The factory must register the paid product/return URL before checkout can complete in production. No product ID or secret is hardcoded; the slug-based public endpoint is ready.
-- v1 intentionally includes no framework/database adapters, cloud storage, multi-user collaboration, or effect playback. These are outside the researched smallest useful product; future paid adapters can translate framework state into the open capsule format.
-- Lab Lighthouse does not report field INP without interaction data; TBT is 0ms and the workbench interaction is covered by Playwright.
+- Main application JS: 17,548 bytes (6.58 KB gzip).
+- CSS: 18,371 bytes (5.14 KB gzip).
+- Self-hosted fonts: 72,032 bytes total.
+- Hero image: 79,218 bytes; social image: 54,308 bytes.
+- Service-worker cache: `stc-6b18f2459115`, 16 verified URLs, no missing files or source maps.
+
+### Lighthouse and accessibility
+
+Lighthouse 12.8.2 against the deployed `/demo` route:
+
+- Performance 99
+- Accessibility 100
+- Best practices 100
+- SEO 100
+- FCP 1.2 s
+- LCP 1.7 s
+- TBT 20 ms
+- CLS 0.071
+
+The factory URL verifier reports HTTP 200, `title`, `lang=en`, one `h1`, one `main`, no missing image alt text, no unlabeled buttons, and no console errors.
+
+### Live deployment and identity
+
+- Local and deployed `index.html` SHA-256 are identical: `7574c3a8e3337ab31e4ee1bdcf21989e3e5e518c38da8aa656b92aaeec73377b`.
+- Local and deployed `sw.js` are byte-for-byte identical.
+- All 16 deployed precache URLs return HTTP 200.
+- A fresh live 390 px browser observed worker state `activated`, a controller after reload, a successful update check, and `$.report.chart` after an offline reload. Console errors: none.
+- Hashed JS returns `Cache-Control: public, max-age=31536000, immutable`; `sw.js` returns `Cache-Control: no-cache`.
+- Live responses include CSP, Permissions-Policy, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and strict referrer policy.
+- `/`, `/demo`, `/privacy/`, `/terms/`, and `/404.html` return 200. An unknown route returns 404 and the designed “Page not found” document.
+
+## Known gaps
+
+- Registry publication remains a factory release step.
+- A real checkout was not initiated. The UI and mocked license verification flow are covered, while payment remains owned by the external Sociobot billing system.
+- v1 intentionally has no framework adapters, cloud storage, collaboration, or effect playback; these remain outside the researched smallest useful product.
