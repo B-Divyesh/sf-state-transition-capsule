@@ -1,0 +1,58 @@
+[
+  {
+    "id": "first-divergence",
+    "claim": "The demo identifies the first changed state field between two recorded runs.",
+    "where": "landing page, demo, README",
+    "test": "npm run test:e2e -- --grep @claim:first-divergence",
+    "sandbox": "fresh browser context at /demo with bundled sample capsules; assert the event and exact $.report.chart path"
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "Demo sample data is separate and is not saved to real user storage.",
+    "where": "demo banner",
+    "test": "npm run test:e2e -- --grep @claim:demo-isolation",
+    "sandbox": "seed a real-data marker, enter /demo, reset, and prove the real marker is unchanged and no demo keys remain"
+  },
+  {
+    "id": "local-processing",
+    "claim": "Capsule comparison stays in the browser and does not upload capsule data.",
+    "where": "landing facts, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:local-processing",
+    "sandbox": "record every request during the complete /demo comparison and assert that all requests are same-origin"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts, README",
+    "test": "npm run build && npm run test:e2e:production -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser-owned context; await service-worker activation and control, go offline, reload /demo, and assert the comparison result"
+  },
+  {
+    "id": "redaction",
+    "claim": "Configured fields are redacted before state, event, and metadata values enter a capsule.",
+    "where": "landing page, README",
+    "test": "npm run test:unit -- --grep @claim:redaction",
+    "sandbox": "record known secrets with exact and wildcard paths; assert capsule output is redacted and source input is unchanged"
+  },
+  {
+    "id": "pure-replay",
+    "claim": "Replay runs only the reducer supplied by the application and reports the first divergence.",
+    "where": "landing page, README",
+    "test": "npm run test:unit -- --grep @claim:pure-replay",
+    "sandbox": "replay a bundled capsule through a supplied pure reducer and assert matching and divergent results"
+  },
+  {
+    "id": "package-formats",
+    "claim": "The package ships working ESM, CommonJS, and TypeScript declarations with no runtime dependencies.",
+    "where": "API section, README",
+    "test": "npm run build && npm run test:artifacts -- --grep @claim:package-formats",
+    "sandbox": "build from source, load ESM and CommonJS outputs, inspect declarations, and assert no runtime dependency manifest"
+  },
+  {
+    "id": "license-restore",
+    "claim": "A valid Studio license enables local history without gating the comparison workbench.",
+    "where": "Studio section, terms, README",
+    "test": "npm run test:e2e -- --grep @claim:license-restore",
+    "sandbox": "mock the documented Sociobot verification response, restore a token, and assert Studio history and the free comparison control"
+  }
+]

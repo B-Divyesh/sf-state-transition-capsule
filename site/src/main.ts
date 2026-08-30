@@ -15,6 +15,11 @@ const VERDICT_KEY = `${LICENSE_KEY}:verdict`;
 const RUNS_KEY = "stc:saved-runs";
 const HISTORY_KEY = "stc:case-history";
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const DEMO_MODE = location.pathname.replace(/\/$/, "") === "/demo" || new URLSearchParams(location.search).get("demo") === "1";
+
+function storageKey(key: string): string {
+  return DEMO_MODE ? `demo:${key}` : key;
+}
 
 type Bay = "baseline" | "candidate";
 type CachedVerdict = { valid: boolean; checkedAt: number; reason?: string };
@@ -54,7 +59,7 @@ function makeExamples(): [Capsule, Capsule] {
 
 function setMessage(text: string, error = false): void {
   message.textContent = text;
-  message.style.color = error ? "#ffad94" : "#93cfb8";
+  message.classList.toggle("error", error);
 }
 
 function updateBay(bay: Bay, capsule?: Capsule): void {
@@ -68,7 +73,7 @@ function updateBay(bay: Bay, capsule?: Capsule): void {
 
 function storeRuns(): void {
   if (!studioUnlocked || !rememberToggle.checked || !baseline || !candidate) return;
-  localStorage.setItem(RUNS_KEY, JSON.stringify({ baseline, candidate }));
+  localStorage.setItem(storageKey(RUNS_KEY), JSON.stringify({ baseline, candidate }));
 }
 
 function assignCapsule(bay: Bay, capsule: Capsule): void {
@@ -236,7 +241,7 @@ function setStudio(unlocked: boolean, note?: string): void {
 
 function readVerdict(): CachedVerdict | undefined {
   try {
-    const raw = localStorage.getItem(VERDICT_KEY);
+    const raw = localStorage.getItem(storageKey(VERDICT_KEY));
     return raw ? JSON.parse(raw) as CachedVerdict : undefined;
   } catch { return undefined; }
 }
@@ -253,7 +258,7 @@ async function verifyLicense(token: string, force = false): Promise<void> {
     if (!response.ok) throw new Error("Verification service unavailable");
     const result = await response.json() as { valid?: boolean; reason?: string };
     const verdict: CachedVerdict = { valid: result.valid === true, checkedAt: Date.now(), ...(result.reason ? { reason: result.reason } : {}) };
-    localStorage.setItem(VERDICT_KEY, JSON.stringify(verdict));
+    localStorage.setItem(storageKey(VERDICT_KEY), JSON.stringify(verdict));
     setStudio(verdict.valid, verdict.valid ? undefined : "License no longer active. Check the token or buy a new license.");
   } catch {
     setStudio(cached?.valid === true, cached?.valid ? "Studio is active from the last verification. We’ll retry when the service is available." : "Could not verify right now. The free tools remain available.");
@@ -263,7 +268,7 @@ async function verifyLicense(token: string, force = false): Promise<void> {
 function restoreRuns(): void {
   if (!studioUnlocked) return;
   try {
-    const raw = localStorage.getItem(RUNS_KEY);
+    const raw = localStorage.getItem(storageKey(RUNS_KEY));
     if (!raw) return;
     const saved = JSON.parse(raw) as { baseline?: Capsule; candidate?: Capsule };
     if (saved.baseline) { baseline = saved.baseline; updateBay("baseline", baseline); }
@@ -272,14 +277,14 @@ function restoreRuns(): void {
       rememberToggle.checked = true;
       setMessage("Restored locally saved capsules.");
     }
-  } catch { localStorage.removeItem(RUNS_KEY); }
+  } catch { localStorage.removeItem(storageKey(RUNS_KEY)); }
 }
 
 function renderHistory(): void {
   const panel = element("case-history");
   panel.replaceChildren();
   let history: CaseRecord[] = [];
-  try { history = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
+  try { history = JSON.parse(localStorage.getItem(storageKey(HISTORY_KEY)) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
   if (!history.length) {
     const empty = document.createElement("p");
     empty.textContent = "No saved cases yet.";
@@ -297,15 +302,20 @@ function renderHistory(): void {
 }
 
 function bindLicense(): void {
+  if (DEMO_MODE) {
+    setStudio(false, "Demo mode does not read or save license data.");
+    element<HTMLButtonElement>("restore-button").disabled = true;
+    return;
+  }
   const params = new URLSearchParams(location.search);
   const returnedLicense = params.get("license");
   if (returnedLicense) {
-    localStorage.setItem(LICENSE_KEY, returnedLicense);
+    localStorage.setItem(storageKey(LICENSE_KEY), returnedLicense);
     params.delete("license");
     const query = params.toString();
     history.replaceState({}, "", `${location.pathname}${query ? `?${query}` : ""}${location.hash}`);
   }
-  const token = returnedLicense ?? localStorage.getItem(LICENSE_KEY);
+  const token = returnedLicense ?? localStorage.getItem(storageKey(LICENSE_KEY));
   const cached = readVerdict();
   if (token && cached?.valid) setStudio(true);
   if (token) void verifyLicense(token, Boolean(returnedLicense));
@@ -320,7 +330,7 @@ function bindLicense(): void {
     const input = element<HTMLInputElement>("license-input");
     const value = input.value.trim();
     if (!value) return;
-    localStorage.setItem(LICENSE_KEY, value);
+    localStorage.setItem(storageKey(LICENSE_KEY), value);
     element("license-note").textContent = "Verifying license…";
     void verifyLicense(value, true);
   });
@@ -331,9 +341,9 @@ function bindLicense(): void {
       return;
     }
     let history: CaseRecord[] = [];
-    try { history = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
+    try { history = JSON.parse(localStorage.getItem(storageKey(HISTORY_KEY)) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
     history.unshift({ label: label.value.trim(), path: latestReport.firstDivergence?.path ?? "No divergence", at: new Date().toISOString() });
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
+    localStorage.setItem(storageKey(HISTORY_KEY), JSON.stringify(history.slice(0, 50)));
     label.value = "";
     renderHistory();
     element("license-note").textContent = "Case saved on this device.";
@@ -362,7 +372,7 @@ updateConnection();
 window.addEventListener("online", updateConnection);
 window.addEventListener("offline", updateConnection);
 compareButton.addEventListener("click", compareRuns);
-element<HTMLButtonElement>("sample-button").addEventListener("click", () => {
+function loadSampleRuns(): void {
   [baseline, candidate] = makeExamples();
   updateBay("baseline", baseline);
   updateBay("candidate", candidate);
@@ -370,14 +380,33 @@ element<HTMLButtonElement>("sample-button").addEventListener("click", () => {
   emptyResult.hidden = false;
   resultContent.hidden = true;
   storeRuns();
-});
+}
+
+element<HTMLButtonElement>("sample-button").addEventListener("click", loadSampleRuns);
 rememberToggle.addEventListener("change", () => {
   if (rememberToggle.checked) storeRuns();
   else {
-    localStorage.removeItem(RUNS_KEY);
+    localStorage.removeItem(storageKey(RUNS_KEY));
     setMessage("Saved capsules removed from this device.");
   }
 });
+
+if (DEMO_MODE) {
+  document.title = "Demo — State Transition Capsule";
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", "https://state-transition-capsule.sociobot.in/demo");
+  element<HTMLElement>("demo-banner").hidden = false;
+  loadSampleRuns();
+  compareRuns();
+  element<HTMLButtonElement>("reset-demo").addEventListener("click", () => {
+    for (const key of [RUNS_KEY, HISTORY_KEY, LICENSE_KEY, VERDICT_KEY]) localStorage.removeItem(`demo:${key}`);
+    loadSampleRuns();
+    compareRuns();
+  });
+  element<HTMLAnchorElement>("start-real").addEventListener("click", () => {
+    for (const key of [RUNS_KEY, HISTORY_KEY, LICENSE_KEY, VERDICT_KEY]) localStorage.removeItem(`demo:${key}`);
+  });
+  window.requestAnimationFrame(() => element("workbench-title").scrollIntoView({ block: "start" }));
+}
 
 if (import.meta.env.PROD && "serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", () => void navigator.serviceWorker.register("/sw.js"));

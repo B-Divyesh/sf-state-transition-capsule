@@ -1,18 +1,20 @@
 import { defineConfig } from "vite";
-import { readdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, relative } from "node:path";
 
 const siteOutput = fileURLToPath(new URL("./dist/site", import.meta.url));
 
-function cacheVersion(urls: readonly string[]): string {
-  // A deterministic cache name rolls the shell forward when emitted assets change.
-  let hash = 2166136261;
-  for (const character of urls.join("\n")) {
-    hash ^= character.charCodeAt(0);
-    hash = Math.imul(hash, 16777619);
+function cacheVersion(files: readonly string[]): string {
+  // Hash paths and bytes so edits to non-hashed HTML or images also roll the shell forward.
+  const hash = createHash("sha256");
+  for (const file of files) {
+    hash.update(file);
+    hash.update("\0");
+    hash.update(readFileSync(join(siteOutput, file)));
   }
-  return `stc-${(hash >>> 0).toString(16)}`;
+  return `stc-${hash.digest("hex").slice(0, 12)}`;
 }
 
 function emittedFiles(directory: string): string[] {
@@ -39,6 +41,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: new URL("./site/index.html", import.meta.url).pathname,
+        notFound: new URL("./site/404.html", import.meta.url).pathname,
         privacy: new URL("./site/privacy/index.html", import.meta.url).pathname,
         terms: new URL("./site/terms/index.html", import.meta.url).pathname
       }
@@ -58,11 +61,11 @@ export default defineConfig({
       // Vite removes empty HTML entry chunks after Rollup's generateBundle
       // phase, but leaves their sourcemaps. Scan the final output instead of
       // predicting it from Rollup's intermediate bundle.
-      const urls = emittedFiles(siteOutput)
+      const files = emittedFiles(siteOutput)
         .filter((file) => file !== "sw.js" && !file.endsWith(".map") && file !== "staticwebapp.config.json")
-        .map(publicUrl)
         .sort();
-      const cache = cacheVersion(urls);
+      const urls = files.map(publicUrl);
+      const cache = cacheVersion(files);
       writeFileSync(join(siteOutput, "sw.js"), `const CACHE=${JSON.stringify(cache)};const ASSETS=${JSON.stringify(urls)};
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));

@@ -17,7 +17,7 @@ export default defineConfig({
   webServer: {
     command: production ? "npm run preview -- --host 127.0.0.1" : "npm run dev -- --host 127.0.0.1",
     url: "http://127.0.0.1:4173",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 30_000
   }
 });

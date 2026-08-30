@@ -15,7 +15,7 @@ const clock = (() => {
 })();
 
 describe("createRecorder", () => {
-  it("records the documented example and redacts state, events, and metadata", () => {
+  it("@claim:redaction records the documented example and redacts state, events, and metadata", () => {
     const initial = { report: null, auth: { token: "secret" }, profile: { password: "also-secret" } };
     const recorder = createRecorder({
       id: "run-2",
@@ -76,7 +76,7 @@ describe("compareCapsules", () => {
 });
 
 describe("replayCapsule", () => {
-  it("replays only the supplied pure reducer and detects divergence", () => {
+  it("@claim:pure-replay replays only the supplied pure reducer and detects divergence", () => {
     const recorder = createRecorder({ name: "counter", id: "counter", initialState: { count: 0 }, now: clock });
     recorder.record({ type: "increment" }, { count: 1 });
     recorder.record({ type: "increment" }, { count: 2 });

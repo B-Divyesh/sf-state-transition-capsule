@@ -32,6 +32,7 @@ Controls settle over 180ms with opacity and transform only. A newly calculated d
 ## Original asset plan and provenance
 
 - `site/public/instrument-trace.webp`: generated specifically for this product with the factory image deployment, then locally converted to WebP. Prompt: “Editorial cutaway illustration of a mid-century laboratory diagnostic instrument for comparing two software state timelines, cream enamel casing, charcoal recessed screen, orange and teal indicator lamps, two paper data cartridges feeding a single divergence trace, subtle screenprint grain, geometric 1960s technical-manual composition, warm off-white background, no people, no readable text, no logos, no watermark, wide landscape with the instrument concentrated on the right and calm negative space on the left.” Deployment metadata is retained beside the source during generation; the shipped WebP is an original project asset.
+- `site/public/og-instrument-trace.webp`: deterministic 1200×630 center crop of the original instrument artwork for social previews. Created locally with ImageMagick 6 at WebP quality 82; it introduces no new imagery or license.
 - Interface icons and signal marks are hand-made CSS/SVG geometry and carry no external license dependency.
 
 The generated image is explanatory: it establishes the two-runs-to-one-divergence model before the user reaches the live workbench.

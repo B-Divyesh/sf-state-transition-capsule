@@ -5,8 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#182420" />
     <meta name="description" content="Capture, redact, replay, and compare state transitions locally. Find the first persisted field that changed between two runs." />
+    <link rel="canonical" href="https://state-transition-capsule.sociobot.in/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="State Transition Capsule — Compare state changes" />
+    <meta property="og:description" content="Compare two recorded runs and find the first state field that changed." />
+    <meta property="og:url" content="https://state-transition-capsule.sociobot.in/" />
+    <meta property="og:image" content="https://state-transition-capsule.sociobot.in/og-instrument-trace.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="State Transition Capsule — Compare state changes" />
+    <meta name="twitter:description" content="Compare two recorded runs and find the first state field that changed." />
+    <meta name="twitter:image" content="https://state-transition-capsule.sociobot.in/og-instrument-trace.webp" />
     <title>State Transition Capsule — Find the first divergent state</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -16,27 +29,36 @@
         <span>State Transition Capsule</span>
       </a>
       <nav aria-label="Primary navigation">
+        <a href="/demo">Demo</a>
         <a href="#workbench">Workbench</a>
         <a href="#api">API</a>
-        <a href="#studio">Studio</a>
-        <a href="https://github.com/B-Divyesh/sf-state-transition-capsule">GitHub</a>
+        <a href="/privacy/">Privacy</a>
       </nav>
     </header>
+
+    <aside class="demo-banner" id="demo-banner" aria-label="Demo mode" hidden>
+      <p><strong>Demo — sample data, nothing is saved</strong></p>
+      <div>
+        <button class="text-button" id="reset-demo" type="button">Reset demo</button>
+        <a href="/" id="start-real">Start for real</a>
+      </div>
+    </aside>
 
     <main id="main">
       <section class="hero section-shell" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="status-lamp" aria-hidden="true"></span> Local state forensics</p>
-          <h1 id="hero-title">Find the first state change that broke the second run.</h1>
-          <p class="lede">Capture named snapshots and domain events. Redact sensitive fields at the source. Compare a known-good run with the failure—without uploading either one.</p>
+          <p class="eyebrow"><span class="status-lamp" aria-hidden="true"></span> Local comparison viewer</p>
+          <h1 id="hero-title" tabindex="-1">Find the state change that broke the second run.</h1>
+          <p class="lede">For developers debugging repeat-run failures, it compares two state histories and names the first field that changed.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#workbench">Open the workbench</a>
+            <a class="button button-primary" href="/demo">Try it with sample data</a>
+            <span class="action-note">Loads two sample runs in a separate demo.</span>
             <button class="install-command" type="button" data-copy="npm install state-transition-capsule" aria-label="Copy npm install command">
               <span>npm i state-transition-capsule</span><span class="copy-label">Copy</span>
             </button>
           </div>
           <ul class="signal-list" aria-label="Product guarantees">
-            <li>Local only</li><li>JSON portable</li><li>No effect execution</li>
+            <li>Capsules stay in this tab</li><li>Works offline after the first visit</li><li>Free core tools · Studio costs $39 once</li>
           </ul>
         </div>
         <figure class="hero-visual">
@@ -49,7 +71,7 @@
         <div class="workbench section-shell">
           <div class="panel-heading">
             <div>
-              <p class="panel-kicker">Bench 01 / compare</p>
+              <p class="panel-kicker">Compare two runs</p>
               <h2 id="workbench-title">Divergence workbench</h2>
               <p>Load a known-good capsule and the run that drifted. Files stay in this tab by default.</p>
             </div>
@@ -104,8 +126,8 @@
 
       <section class="method section-shell" aria-labelledby="method-title">
         <div class="section-intro">
-          <p class="eyebrow">A small evidence format</p>
-          <h2 id="method-title">Instrument the state boundary, not the whole session.</h2>
+          <p class="eyebrow">How it works</p>
+          <h2 id="method-title">Capture only the state your bug changed.</h2>
           <p>Capsules capture only the state and domain events you declare. That makes failures portable, reviewable, and safe to inspect on a second machine.</p>
         </div>
         <ol class="method-list">
@@ -118,10 +140,10 @@
       <section class="api-section" id="api" aria-labelledby="api-title">
         <div class="section-shell api-grid">
           <div class="section-intro">
-            <p class="eyebrow">0.1.0 / zero runtime dependencies</p>
+            <p class="eyebrow">Package contents</p>
             <h2 id="api-title">A narrow API for evidence you own.</h2>
             <p>ESM, CommonJS, and TypeScript declarations ship together. No telemetry. No remote runtime.</p>
-            <a class="inline-link" href="https://github.com/B-Divyesh/sf-state-transition-capsule#readme">Read the complete API guide <span aria-hidden="true">→</span></a>
+            <a class="inline-link" href="https://github.com/B-Divyesh/sf-state-transition-capsule#readme">Read the complete API guide on GitHub <span aria-hidden="true">→</span></a>
           </div>
           <div class="code-panel">
             <div class="code-caption"><span>capture.ts</span><button type="button" data-copy-target="api-code">Copy code</button></div>
@@ -142,22 +164,22 @@ run.record(event, nextState);</code></pre>
       <section class="studio section-shell" id="studio" aria-labelledby="studio-title">
         <div class="studio-panel">
           <div class="studio-copy">
-            <p class="eyebrow">Capsule Studio / one-time purchase</p>
+            <p class="eyebrow">One-time purchase</p>
             <h2 id="studio-title">Keep a local case history.</h2>
             <p>The open package and viewer handle the complete capture-and-compare workflow. Studio adds saved comparison labels and local history for teams who revisit incidents.</p>
             <p class="price"><strong>$39</strong> one time · per user</p>
             <ul><li>Saved local comparison history</li><li>Named incident labels</li><li>Future Studio adapters</li></ul>
             <div class="studio-actions">
-              <a class="button button-primary" href="https://api.sociobot.in/api/v1/products/state-transition-capsule/checkout">Buy Capsule Studio</a>
+              <a class="button button-primary" href="https://api.sociobot.in/api/v1/products/state-transition-capsule/checkout">Buy Studio in hosted checkout</a>
               <button class="text-button" id="restore-button" type="button">Restore a license</button>
             </div>
             <p class="fine-print">Checkout and refunds are handled by Sociobot/Dodo, the merchant of record. A refunded license is revoked automatically. <a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a></p>
           </div>
           <div class="license-console" id="license-console">
             <span class="dial" aria-hidden="true"></span>
-            <p class="panel-kicker">License channel</p>
+            <p class="panel-kicker">License status</p>
             <h3 id="license-state">Studio locked</h3>
-            <p id="license-note">The free comparison bench remains fully available.</p>
+            <p id="license-note" role="status" aria-live="polite">The free comparison bench remains fully available.</p>
             <form id="license-form" hidden>
               <label for="license-input">License token</label>
               <input id="license-input" name="license" autocomplete="off" spellcheck="false" required />
@@ -174,9 +196,9 @@ run.record(event, nextState);</code></pre>
     </main>
 
     <footer class="site-footer section-shell">
-      <p><span class="brand-mark" aria-hidden="true">ST/C</span> Open capsule format. Local by default.</p>
-      <nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-state-transition-capsule">Source</a></nav>
-      <p>© 2026 Sociobot · MIT licensed</p>
+      <p><span class="brand-mark" aria-hidden="true">ST/C</span> Compare recorded state changes locally.</p>
+      <nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-state-transition-capsule">Source on GitHub</a></nav>
+      <p>Built by Param Factory · v0.1.0</p>
     </footer>
 
     <script type="module" src="/src/main.ts"></script>
