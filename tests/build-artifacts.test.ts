@@ -41,6 +41,13 @@ describe("production artifacts", () => {
     expect(config.responseOverrides["404"]?.rewrite).toBe("/404.html");
   });
 
+  it("preloads the emitted display font to avoid first-view layout movement", () => {
+    const home = readFileSync(resolve(siteRoot, "index.html"), "utf8");
+    const match = home.match(/<link rel="preload" href="([^\"]+\.woff2)" as="font" type="font\/woff2" crossorigin\s*\/?\s*>/);
+    expect(match?.[1]).toBeDefined();
+    expect(existsSync(outputPath(match![1]))).toBe(true);
+  });
+
   it("@claim:package-formats loads ESM and CommonJS and ships declarations", async () => {
     const esmPath = new URL("../dist/package/index.js", import.meta.url).href;
     const esm = await import(esmPath);
