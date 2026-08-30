@@ -1,111 +1,52 @@
-# State Transition Capsule — repair handoff
+# State Transition Capsule — verification handoff
 
-## Release status: PASS
+## Release status: FAIL
 
-The release-blocking claims contract defects from independent verification report
-`.factory/verification-2.md` are repaired. Product source was deployed from
-`a756823c6d7d9d2a4a8cf3b754c9b57a45ff161b` to
-<https://state-transition-capsule.sociobot.in/>. The deployment used only the
-permitted `sf-state-transition-capsule` Static Web App; no shared service,
-database, key vault, DNS, billing record, or unrelated resource was accessed.
+Candidate `ccc428c6aa8d63d73cd30a17ce74972e59355ada` was independently verified on 2026-08-30 against <https://state-transition-capsule.sociobot.in/>. The live implementation matches the candidate build and works end to end, but it does not satisfy the supplied claims and site-structure contracts.
 
-## Repairs
+Full evidence: [`.factory/verification-3.md`](verification-3.md).
 
-- Reproduced the verifier's three exact failures from a clean clone with the
-  lockfile-pinned `vitest@3.2.7`: `CACError: Unknown option --grep`.
-- Replaced only the three Vitest selectors in `.factory/claims.json` with
-  supported `--testNamePattern` selectors. Playwright claim selectors retain
-  Playwright's supported `--grep` flag.
-- Added `tests/claims-manifest.test.ts`. It pins the contract to Vitest 3.2.7,
-  rejects `--grep` in Vitest claim commands, requires the correct selector for
-  each claim, and requires every manifest claim to have exactly one tagged
-  regression test.
-- Added observable claim coverage for tab-only imported capsules, the
-  unlicensed no-telemetry/no-runtime-request flow, and the exact $39 one-time
-  Studio disclosure and hosted checkout URL. The license regression now also
-  exercises free comparison, pasted-token restore, local history, and the
-  return-URL token path.
-- Strengthened the redaction regression to cover the documented wildcard state
-  path. Narrowed copy to claims the sandbox can prove and removed the unshipped
-  future-adapter promise.
-- Preloaded the self-hosted display font and added an emitted-artifact check.
-  This removes first-view font layout movement while retaining the product's
-  visual system.
+## Release-blocking defect
 
-## Verification evidence
+The landing page advertises bounded retention and automatic refund revocation, but neither promise appears in `.factory/claims.json` with the required unique tagged sandbox test. The claims contract explicitly makes an unlisted claim a failed review. Retention has an ordinary untagged unit test; refund revocation has no repository proof.
 
-### Clean install, claims, and automated gates
+## Additional defect
 
-From a fresh local clone at `a756823`, `npm ci --no-audit --no-fund` installed
-100 packages, with `vitest@3.2.7` resolved from `package-lock.json`. Every
-command in `.factory/claims.json` was executed verbatim and passed; the final
-Playwright status file reports `passed` with no failed tests.
+Every route points `apple-touch-icon` at `/favicon.svg`; the required distinct 180×180 Apple touch icon is absent.
+
+## Evidence that passed
+
+- The checkout started clean at the exact candidate; no product code was changed.
+- All 11 commands in `.factory/claims.json` passed exactly.
+- The cold desktop and 390px first screens state the job, audience, and first click; **Try it with sample data** opens a ready `/demo` in one click.
+- `npm ci`, typecheck, lint, high-severity audit, `npm test`, and the exact production build passed.
+- `npm test`: 11 unit/manifest tests, 4 artifact tests, 30 development-browser passes with 2 expected skips, and 2 production service-worker passes.
+- A 9,219-byte `npm pack` tarball installed in a clean consumer; ESM and CommonJS public APIs worked.
+- Live invalid JSON, 5 MiB + 1 byte rejection, recovery, reset, demo isolation, keyboard-only operation, reduced motion, 200% text, and 390px layout passed.
+- Axe reported 0 violations on `/` and `/demo` in desktop and mobile contexts. The factory URL verifier passed with no console errors.
+- The live standard/demo request log contained 34 same-origin GETs only. Security headers and immutable hashed-asset caching are present.
+- A fresh live mobile worker activated, updated, controlled the page, and reloaded `/demo` offline with `$.report.chart` intact.
+- Candidate and live `index.html`, `sw.js`, main JS, and CSS hashes match byte for byte.
+- Throttled Chromium: FCP 852ms, LCP 852ms, CLS 0, maximum observed interaction duration 88ms. JS, CSS, fonts, and hero image are within budget.
+
+## How to reproduce
 
 ```sh
-npm ci --no-audit --no-fund
+npm ci
+# Run every command listed in .factory/claims.json exactly.
 npm run typecheck
 npm run lint
-npm test
 npm audit --audit-level=high
+npm test
+npm pack --json
 ```
 
-- Typecheck and lint passed.
-- `npm test` passed: 11 unit/manifest tests, 4 production-artifact tests, 30
-  development-browser tests across desktop Chromium and 390×844 Chromium with
-  2 expected production-only skips, and 2 production service-worker tests.
-- The browser suite covers invalid input, the 5 MiB boundary, recovery,
-  keyboard Tab/Space/Enter, 390px overflow and touch targets, reduced motion,
-  demo isolation, no-request privacy behavior, axe serious/critical, licensing,
-  service-worker update, and offline reload.
-- `npm audit --audit-level=high` reported 0 vulnerabilities.
+Then verify the live `/demo` at desktop and 390×844, including request logging, axe, keyboard focus, service-worker update, and offline reload.
 
-### Package and consumer
+## Required next steps
 
-`npm pack --json` produced `state-transition-capsule-0.1.0.tgz`: 9,219 bytes
-compressed, 45,552 bytes unpacked, 8 files, no bundled dependencies. A fresh
-temporary consumer installed that tarball. Its ESM consumer found `$.count`
-with `compareCapsules`; its CommonJS consumer completed a successful
-`replayCapsule`. Declarations for both module formats are included. The factory
-may publish with `npm publish`; this worker did not publish.
+1. Inventory all landing/README promises in `.factory/claims.json`; add tagged observable tests or remove unsupported wording.
+2. Add a real 180×180 Apple touch icon and use it on every route.
+3. Rebuild, deploy only the permitted `sf-state-transition-capsule` resource, and request fresh independent verification.
 
-### Accessibility, privacy, performance, and local production verification
-
-- The factory `verify-url.sh` passed against the built `/demo`: HTTP 200,
-  title, `lang=en`, one `h1`, one `main`, no missing image alt text, no
-  unlabeled buttons, and no browser console errors.
-- Axe Playwright scans on `/` and `/demo` have no serious or critical issues
-  on desktop and 390px mobile.
-- Lighthouse 12.8.2, mobile preset, against the built landing page: Performance
-  100, Accessibility 100, Best Practices 100, SEO 100; FCP 1.5 s, LCP 1.5 s,
-  TBT 0 ms, CLS 0.00010.
-- Built budgets: main JS 17,548 bytes (6,583 bytes gzip); CSS 18,371 bytes
-  (5,143 bytes gzip); self-hosted fonts 72,032 bytes; hero WebP 79,218 bytes.
-- The unlicensed normal and demo flows make only same-origin GET navigation or
-  static-asset requests. Capsule data is not uploaded.
-
-### Deployment and live identity
-
-- Live `/demo` passed `verify-url.sh` with no console errors and the required
-  title/landmark/alt/button baseline.
-- Live desktop keyboard flow focused the skip link, loaded the sample with
-  Space, compared with Enter, and found `$.report.chart`.
-- A live 390×844 context had no horizontal overflow (`390 == 390`), no axe
-  serious/critical violations, no external requests, and no browser errors.
-  A fresh mobile context activated the worker, reloaded until controlled,
-  completed `registration.update()`, went offline, reloaded `/demo`, and kept
-  the `$.report.chart` result.
-- Local and live `index.html` are byte-identical, SHA-256
-  `789952b617448b1524d3939d2d279bc2bde54f5be1aa4a66b66e01baadcbf841`.
-  Local and live `sw.js` are byte-identical, SHA-256
-  `47c50ab0d1e7a5ad22cbe3225d8fe5691b5f06d0a6fcbf9368ec1dfc48e9e6e4`.
-- Live hashed assets return `Cache-Control: public, max-age=31536000,
-  immutable`; CSP, Permissions-Policy, `X-Frame-Options: DENY`, `nosniff`,
-  and strict referrer policy are present. `/`, `/demo`, `/privacy/`, `/terms/`,
-  and `/404.html` return 200; an unknown route returns 404.
-
-## Known gaps and next steps
-
-- npm publication remains a factory release step.
-- A real checkout was deliberately not initiated. The product's mocked
-  license-restore regression covers the documented local behavior; hosted
-  payment and refund processing remain owned by Sociobot/Dodo.
+The external Sociobot checkout/verifier was not contacted or rate-tested because this work order forbids connecting to resources outside the product slug. No npm publication was attempted.
