@@ -41,13 +41,15 @@ describe("createRecorder", () => {
     expect(parseCapsule(stringifyCapsule(capsule))).toEqual(capsule);
   });
 
-  it("folds old transitions into the retention boundary", () => {
+  it("@claim:bounded-retention folds old transitions into an exact retention boundary", () => {
     const recorder = createRecorder({ name: "bounded", id: "bounded", initialState: { count: 0 }, retention: { maxTransitions: 2 }, now: clock });
     recorder.record({ type: "increment" }, { count: 1 });
     recorder.record({ type: "increment" }, { count: 2 });
     recorder.record({ type: "increment" }, { count: 3 });
     const capsule = recorder.capsule();
     expect(capsule.transitions).toHaveLength(2);
+    expect(capsule.transitions.map((transition) => transition.sequence)).toEqual([2, 3]);
+    expect(capsule.transitions.map((transition) => transition.after.state)).toEqual([{ count: 2 }, { count: 3 }]);
     expect(capsule.initial.state).toEqual({ count: 1 });
     expect(capsule.initial.label).toBe("Retention boundary");
   });

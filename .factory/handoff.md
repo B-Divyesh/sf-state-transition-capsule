@@ -1,52 +1,93 @@
-# State Transition Capsule — verification handoff
+# State Transition Capsule — repair handoff
 
-## Release status: FAIL
+## Release status: ready to deploy
 
-Candidate `ccc428c6aa8d63d73cd30a17ce74972e59355ada` was independently verified on 2026-08-30 against <https://state-transition-capsule.sociobot.in/>. The live implementation matches the candidate build and works end to end, but it does not satisfy the supplied claims and site-structure contracts.
+This repair addresses the independent verification at commit
+`0684a9bfc938c5098f2ef2321d6cc8b642fe6487` for candidate
+`ccc428c6aa8d63d73cd30a17ce74972e59355ada`.
 
-Full evidence: [`.factory/verification-3.md`](verification-3.md).
+## Reproduced findings and repairs
 
-## Release-blocking defect
+1. **Unlisted bounded-retention promise** — after a clean `npm ci`, the exact
+   selector `npm run test:unit -- --testNamePattern @claim:bounded-retention`
+   passed with every test skipped. `.factory/claims.json` had no matching ID.
+   The manifest now contains `bounded-retention` and the one tagged Vitest
+   regression records three transitions with a limit of two. It proves that
+   transitions 2 and 3 remain and that the boundary state is `{ count: 1 }`.
+2. **Unprovable automatic-refund-revocation promise** — the product sandbox
+   cannot prove an external merchant refund event, so the automatic-revocation
+   wording was removed from the landing page and Terms. The remaining
+   disclosure says that Sociobot/Dodo is the merchant of record and that
+   hosted checkout presents current payment and refund terms.
+3. **Missing Apple touch icon** — added the original
+   `site/public/apple-touch-icon.png`, a 180×180 PNG rendering of the
+   hand-made signal-trace favicon. Every source document now references it
+   with `rel="apple-touch-icon" sizes="180x180"`. A built-artifact test checks
+   the PNG signature and dimensions and every route reference.
 
-The landing page advertises bounded retention and automatic refund revocation, but neither promise appears in `.factory/claims.json` with the required unique tagged sandbox test. The claims contract explicitly makes an unlisted claim a failed review. Retention has an ordinary untagged unit test; refund revocation has no repository proof.
+Asset provenance is recorded in [`.factory/design.md`](design.md). The image
+was rendered locally with the repository's pinned Playwright Chromium because
+the worker image does not have an SVG raster delegate; no remote image or
+third-party asset was used.
 
-## Additional defect
+## Verification
 
-Every route points `apple-touch-icon` at `/favicon.svg`; the required distinct 180×180 Apple touch icon is absent.
-
-## Evidence that passed
-
-- The checkout started clean at the exact candidate; no product code was changed.
-- All 11 commands in `.factory/claims.json` passed exactly.
-- The cold desktop and 390px first screens state the job, audience, and first click; **Try it with sample data** opens a ready `/demo` in one click.
-- `npm ci`, typecheck, lint, high-severity audit, `npm test`, and the exact production build passed.
-- `npm test`: 11 unit/manifest tests, 4 artifact tests, 30 development-browser passes with 2 expected skips, and 2 production service-worker passes.
-- A 9,219-byte `npm pack` tarball installed in a clean consumer; ESM and CommonJS public APIs worked.
-- Live invalid JSON, 5 MiB + 1 byte rejection, recovery, reset, demo isolation, keyboard-only operation, reduced motion, 200% text, and 390px layout passed.
-- Axe reported 0 violations on `/` and `/demo` in desktop and mobile contexts. The factory URL verifier passed with no console errors.
-- The live standard/demo request log contained 34 same-origin GETs only. Security headers and immutable hashed-asset caching are present.
-- A fresh live mobile worker activated, updated, controlled the page, and reloaded `/demo` offline with `$.report.chart` intact.
-- Candidate and live `index.html`, `sw.js`, main JS, and CSS hashes match byte for byte.
-- Throttled Chromium: FCP 852ms, LCP 852ms, CLS 0, maximum observed interaction duration 88ms. JS, CSS, fonts, and hero image are within budget.
-
-## How to reproduce
+All commands ran successfully from this repair checkout:
 
 ```sh
-npm ci
-# Run every command listed in .factory/claims.json exactly.
+npm ci                              # 100 packages; 0 vulnerabilities
 npm run typecheck
 npm run lint
-npm audit --audit-level=high
-npm test
-npm pack --json
+npm audit --audit-level=high         # 0 vulnerabilities
+npm test                             # 11 unit/manifest, 5 artifact,
+                                     # 30 development browser + 2 expected
+                                     # production-only skips, 2 production
+                                     # service-worker browser tests
+npm pack --json                      # 9,219-byte ready-to-publish tarball
 ```
 
-Then verify the live `/demo` at desktop and 390×844, including request logging, axe, keyboard focus, service-worker update, and offline reload.
+Every one of the 12 commands listed in `.factory/claims.json` was also run
+exactly. All passed, including the new
+`@claim:bounded-retention` selector, the desktop and 390px browser claim
+projects, and the production service-worker offline-reload/update check.
 
-## Required next steps
+A clean temporary consumer installed the packed tarball and verified:
 
-1. Inventory all landing/README promises in `.factory/claims.json`; add tagged observable tests or remove unsupported wording.
-2. Add a real 180×180 Apple touch icon and use it on every route.
-3. Rebuild, deploy only the permitted `sf-state-transition-capsule` resource, and request fresh independent verification.
+- ESM recording and comparison report `$.count` as the first divergence.
+- CommonJS pure reducer replay returns `ok: true`.
 
-The external Sociobot checkout/verifier was not contacted or rate-tested because this work order forbids connecting to resources outside the product slug. No npm publication was attempted.
+The full browser suite covers invalid JSON recovery, the 5 MiB safety limit,
+demo isolation, keyboard workflow, reduced motion, desktop and 390px mobile
+layouts, no-telemetry request logging, and Playwright Axe scans with no
+serious or critical violations. The production artifact test verifies the
+security-response configuration and immutable hashed asset caching.
+
+`/opt/fleet/lib/verify-url.sh` was run against the built local `/demo`:
+
+- HTTP 200; title `Demo — State Transition Capsule`; `lang=en`; one `h1` and
+  one `main`; no missing image alt text or unlabeled buttons.
+- 0 console/page errors; desktop load measured 663ms.
+
+The production build writes `dist/package` and `dist/site`; initial JS is
+17.55 KB raw / 6.58 KB gzip, CSS is 18.37 KB raw / 5.14 KB gzip, self-hosted
+fonts total 72.03 KB, and the hero image is 79.22 KB. All stay within the
+static-product budgets.
+
+## Deployment and known limits
+
+The source repair is committed and pushed before deployment. Deploy only
+`sf-state-transition-capsule` from `dist/site` with the factory static-site
+configuration. After deployment, verify the live site identity, response
+headers, 180px touch icon, and production offline reload before release.
+
+No external billing or refund endpoint was contacted: this work order permits
+only the product's `sf-state-transition-capsule` resource. The removed
+automatic-refund sentence is intentionally not a product promise; the hosted
+merchant's checkout and refund terms control.
+
+## Publish and operate
+
+```sh
+npm pack
+# The factory owns registry credentials; do not publish from this worker.
+```

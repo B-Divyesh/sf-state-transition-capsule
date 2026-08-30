@@ -50,6 +50,18 @@ describe("production artifacts", () => {
     expect(existsSync(outputPath(preloadUrl))).toBe(true);
   });
 
+  it("ships a distinct 180px Apple touch icon on every document route", () => {
+    const icon = readFileSync(resolve(siteRoot, "apple-touch-icon.png"));
+    expect(icon.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+    expect(icon.readUInt32BE(16)).toBe(180);
+    expect(icon.readUInt32BE(20)).toBe(180);
+
+    for (const route of ["index.html", "privacy/index.html", "terms/index.html", "404.html"]) {
+      const document = readFileSync(resolve(siteRoot, route), "utf8");
+      expect(document, route).toMatch(/<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png"\s*\/?\s*>/);
+    }
+  });
+
   it("@claim:package-formats loads ESM and CommonJS and ships declarations", async () => {
     const esmPath = new URL("../dist/package/index.js", import.meta.url).href;
     const esm = await import(esmPath);

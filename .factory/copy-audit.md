@@ -29,8 +29,7 @@ Audited 30 August 2026. Counts treat hyphenated terms and paths as one word. Eve
 10  The open package and viewer handle the complete capture-and-compare workflow.
 13  Studio adds saved comparison labels and local history for teams who revisit incidents.
  5  $39 one time · per user.
-11  Checkout and refunds are handled by Sociobot/Dodo, the merchant of record.
- 6  A refunded license is revoked automatically.
+ 7  Sociobot/Dodo is the merchant of record.
  7  The free comparison bench remains fully available.
  5  Compare recorded state changes locally.
 ```

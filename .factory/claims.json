@@ -42,6 +42,13 @@
     "sandbox": "replay a bundled capsule through a supplied pure reducer and assert matching and divergent results"
   },
   {
+    "id": "bounded-retention",
+    "claim": "A transition limit keeps the newest recorded transitions and records the earlier state as the retention boundary.",
+    "where": "landing page",
+    "test": "npm run test:unit -- --testNamePattern @claim:bounded-retention",
+    "sandbox": "record three count transitions with maxTransitions set to two; assert the two newest transitions remain and the initial snapshot is the first discarded transition's after-state"
+  },
+  {
     "id": "package-formats",
     "claim": "The package ships working ESM, CommonJS, and TypeScript declarations with no runtime dependencies.",
     "where": "API section, README",
