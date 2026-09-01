@@ -41,13 +41,13 @@ describe("production artifacts", () => {
     expect(config.responseOverrides["404"]?.rewrite).toBe("/404.html");
   });
 
-  it("preloads the emitted display font to avoid first-view layout movement", () => {
+  it("preloads the emitted display and data fonts to avoid first-view layout movement", () => {
     const home = readFileSync(resolve(siteRoot, "index.html"), "utf8");
-    const match = home.match(/<link rel="preload" href="([^\"]+\.woff2)" as="font" type="font\/woff2" crossorigin\s*\/?\s*>/);
-    const preloadUrl = match?.[1];
-    expect(preloadUrl).toBeDefined();
-    if (!preloadUrl) throw new Error("Display-font preload is missing");
-    expect(existsSync(outputPath(preloadUrl))).toBe(true);
+    const preloadUrls = [...home.matchAll(/<link rel="preload" href="([^\"]+\.woff2)" as="font" type="font\/woff2" crossorigin\s*\/?\s*>/g)].map((match) => match[1]!);
+    expect(preloadUrls).toHaveLength(2);
+    expect(preloadUrls.some((url) => url.includes("bricolage-grotesque"))).toBe(true);
+    expect(preloadUrls.some((url) => url.includes("ibm-plex-mono-latin-400"))).toBe(true);
+    expect(preloadUrls.every((url) => existsSync(outputPath(url)))).toBe(true);
   });
 
   it("ships a distinct 180px Apple touch icon on every document route", () => {
