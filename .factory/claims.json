@@ -4,18 +4,18 @@
     "claim": "The demo identifies the first changed state field between two recorded runs.",
     "where": "landing page, demo, README",
     "test": "npm run test:e2e -- --grep @claim:first-divergence",
-    "sandbox": "fresh browser context at /demo with bundled sample capsules; assert the event and exact $.report.chart path"
+    "sandbox": "fresh browser context at /demo with bundled sample run files; assert the event and exact $.report.chart path"
   },
   {
     "id": "demo-isolation",
     "claim": "Demo sample data is separate and is not saved to real user storage.",
-    "where": "demo banner",
+    "where": "demo banner, README",
     "test": "npm run test:e2e -- --grep @claim:demo-isolation",
     "sandbox": "seed a real-data marker, enter /demo, reset, and prove the real marker is unchanged and no demo keys remain"
   },
   {
     "id": "local-processing",
-    "claim": "Capsule comparison stays in the browser and does not upload capsule data.",
+    "claim": "Run file comparison stays in the browser and does not upload run file data.",
     "where": "landing facts, privacy page, README",
     "test": "npm run test:e2e -- --grep @claim:local-processing",
     "sandbox": "record every request during the complete /demo comparison and assert that every request is a same-origin GET"
@@ -29,17 +29,17 @@
   },
   {
     "id": "redaction",
-    "claim": "Configured fields are redacted before state, event, and metadata values enter a capsule.",
+    "claim": "Configured fields are redacted before state, event, and metadata values enter a run file.",
     "where": "landing page, README",
     "test": "npm run test:unit -- --testNamePattern @claim:redaction",
-    "sandbox": "record known secrets with exact and wildcard paths; assert capsule output is redacted and source input is unchanged"
+    "sandbox": "record known secrets with exact and wildcard paths; assert run file output is redacted and source input is unchanged"
   },
   {
     "id": "pure-replay",
-    "claim": "Replay runs only the reducer supplied by the application and reports the first divergence.",
-    "where": "landing page, README",
+    "claim": "Replay runs only the reducer supplied by the application and reports the first changed field.",
+    "where": "README",
     "test": "npm run test:unit -- --testNamePattern @claim:pure-replay",
-    "sandbox": "replay a bundled capsule through a supplied pure reducer and assert matching and divergent results"
+    "sandbox": "replay a bundled run file through a supplied pure reducer and assert matching and divergent results"
   },
   {
     "id": "bounded-retention",
@@ -51,23 +51,23 @@
   {
     "id": "package-formats",
     "claim": "The package ships working ESM, CommonJS, and TypeScript declarations with no runtime dependencies.",
-    "where": "API section, README",
+    "where": "README",
     "test": "npm run build && npm run test:artifacts -- --testNamePattern @claim:package-formats",
     "sandbox": "build from source, load ESM and CommonJS outputs, inspect declarations, and assert no runtime dependency manifest"
   },
   {
     "id": "license-restore",
-    "claim": "A valid Studio license enables local history without gating the comparison workbench.",
+    "claim": "A valid Studio license enables local history without gating the comparison viewer.",
     "where": "Studio section, terms, README",
     "test": "npm run test:e2e -- --grep @claim:license-restore",
     "sandbox": "mock the documented Sociobot verification response, restore a token, and assert Studio history and the free comparison control"
   },
   {
     "id": "tab-local-storage",
-    "claim": "Imported capsules stay in the current tab unless Studio local retention is enabled.",
-    "where": "landing facts, workbench, privacy page, README",
+    "claim": "Imported run files stay in the current tab unless Studio local retention is enabled.",
+    "where": "landing facts, comparison viewer, privacy page, README",
     "test": "npm run test:e2e -- --grep @claim:tab-local-storage",
-    "sandbox": "fresh browser context; import two valid capsules without a license, assert no storage keys, reload, and assert both import bays are empty"
+    "sandbox": "fresh browser context; import two valid run files without a license, assert no storage keys, reload, and assert both import bays are empty"
   },
   {
     "id": "no-telemetry-runtime",
@@ -81,6 +81,55 @@
     "claim": "Capsule Studio costs $39 as a one-time purchase per user.",
     "where": "landing facts, Studio section, terms, README",
     "test": "npm run test:e2e -- --grep @claim:studio-price",
-    "sandbox": "fresh browser context; assert the landing price, exact hosted checkout URL, and the matching terms disclosure"
+    "sandbox": "fresh browser context; assert the landing price, exact hosted checkout URL, and matching terms disclosure"
+  },
+  {
+    "id": "recording",
+    "claim": "The free package records state and events into JSON run files.",
+    "where": "README",
+    "test": "npm run test:unit -- --testNamePattern @claim:recording",
+    "sandbox": "create a recorder, record an event and state, serialize its run file, and inspect the recorded transition"
+  },
+  {
+    "id": "json-roundtrip",
+    "claim": "Run files serialize as JSON, parse on another machine, and retain the same comparison result.",
+    "where": "README, editable playground",
+    "test": "npm run test:e2e -- --grep @claim:json-roundtrip",
+    "sandbox": "create run file JSON with the package, open it in a fresh browser context, import both files, and assert the original comparison path"
+  },
+  {
+    "id": "viewer-does-not-execute-capsules",
+    "claim": "The viewer handles run file text as data; it does not run scripts or make external changes.",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:viewer-does-not-execute-capsules",
+    "sandbox": "import run files containing script-like strings in a fresh browser context and assert no script marker, network request, or external action occurs"
+  },
+  {
+    "id": "public-api-surface",
+    "claim": "The public API exports the six documented functions and TypeScript types.",
+    "where": "README",
+    "test": "npm run build && npm run test:artifacts -- --testNamePattern @claim:public-api-surface",
+    "sandbox": "fresh package consumer imports every documented export from ESM and CommonJS and type-checks a declaration consumer"
+  },
+  {
+    "id": "capsule-format-v1",
+    "claim": "Run files use the versioned media marker state-transition-capsule/v1.",
+    "where": "README",
+    "test": "npm run test:unit -- --testNamePattern @claim:capsule-format-v1",
+    "sandbox": "serialize a run file, assert its marker, parse it, and reject an unsupported marker"
+  },
+  {
+    "id": "local-tarball-install",
+    "claim": "This source checkout builds a local tarball that installs and imports in a fresh project.",
+    "where": "README, API section",
+    "test": "npm run build && npm run test:artifacts -- --testNamePattern @claim:local-tarball-install",
+    "sandbox": "pack the built package, install the tarball into a temporary project without network access, and import its public API"
+  },
+  {
+    "id": "node-20",
+    "claim": "The package requires Node.js 20 or newer.",
+    "where": "README",
+    "test": "npm run test:artifacts -- --testNamePattern @claim:node-20",
+    "sandbox": "inspect the published package manifest and assert its Node engine range is >=20"
   }
 ]

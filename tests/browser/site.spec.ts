@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { createRecorder, stringifyCapsule } from "../../src";
 
 function capsuleFile(id: string) {
   return {
@@ -26,7 +27,7 @@ test("@claim:first-divergence loads the demo and locates the first divergent fie
   await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
   await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
   await expect(page.getByText('State changed after “chart.selected”.')).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Awaiting two capsules" })).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Awaiting two run files" })).toBeHidden();
 });
 
 test("@claim:demo-isolation keeps demo storage separate from real data", async ({ page }) => {
@@ -36,6 +37,14 @@ test("@claim:demo-isolation keeps demo storage separate from real data", async (
   await page.getByRole("button", { name: "Reset demo" }).click();
   expect(await page.evaluate(() => localStorage.getItem("stc:saved-runs"))).toBe("real-data-marker");
   expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith("demo:")))).toEqual([]);
+});
+
+test("opens the isolated sample directly with the documented query URL", async ({ page }) => {
+  await page.goto("/?demo=1");
+  await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
+  await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
+  await page.getByRole("link", { name: "Start for real" }).click();
+  await expect(page).toHaveURL("/");
 });
 
 test("@claim:tab-local-storage keeps imported capsules in memory until Studio retention is enabled", async ({ page }) => {
@@ -50,8 +59,8 @@ test("@claim:tab-local-storage keeps imported capsules in memory until Studio re
   }))).toEqual({ savedRuns: null, history: null, demoKeys: [] });
 
   await page.reload();
-  await expect(page.locator("#baseline-status")).toHaveText("No capsule loaded");
-  await expect(page.locator("#candidate-status")).toHaveText("No capsule loaded");
+  await expect(page.locator("#baseline-status")).toHaveText("No run file loaded");
+  await expect(page.locator("#candidate-status")).toHaveText("No run file loaded");
   await expect(page.getByRole("button", { name: "Compare runs" })).toBeDisabled();
 });
 
@@ -157,7 +166,7 @@ test("local routes load without console errors and keep required landmarks", asy
 test("all visible links and controls meet the 44px target without overflow", async ({ page }, testInfo) => {
   for (const path of ["/demo", "/privacy/", "/terms/", "/404.html"]) {
     await page.goto(path);
-    const controls = page.locator("a, button, label[for]");
+    const controls = page.locator("a, button, label.file-label");
     for (let index = 0; index < await controls.count(); index += 1) {
       const control = controls.nth(index);
       if (!await control.isVisible()) continue;
@@ -202,7 +211,7 @@ test("@claim:license-restore restores a valid Studio license without gating comp
   await page.getByLabel("Remember on this device").check();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("stc:saved-runs"))).not.toBeNull();
   await page.getByLabel("Label this comparison").fill("August comparison");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save case" }).click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("stc:case-history"))).toContain("August comparison");
   expect(await page.evaluate(() => localStorage.getItem("sb_license:state-transition-capsule"))).toBe("test-token");
 
@@ -229,18 +238,90 @@ test("has no serious accessibility violations", async ({ page }, testInfo) => {
   }
 });
 
-test("install and copy controls include their visible labels in their accessible names", async ({ page, context }, testInfo) => {
+test("copy code control includes its visible label in its accessible name", async ({ page, context }, testInfo) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   for (const path of ["/", "/demo"]) {
     await page.goto(path);
     await expect(page.locator(".brand"), `${testInfo.project.name} ${path} wordmark`).toHaveAccessibleName("ST/C State Transition Capsule home");
-    const install = page.locator(".install-command");
-    await expect(install, `${testInfo.project.name} ${path}`).toHaveAccessibleName("npm i state-transition-capsule Copy");
-    await expect(page.locator("[data-copy-target='api-code']")).toHaveAccessibleName("Copy code");
-    await install.click();
-    await expect(install).toHaveAccessibleName("npm i state-transition-capsule Copied");
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("npm install state-transition-capsule");
+    const copy = page.locator("[data-copy-target='api-code']");
+    await expect(copy).toHaveAccessibleName("Copy code");
+    await copy.click();
+    await expect(copy).toHaveAccessibleName("Copied");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("createRecorder");
   }
+});
+
+test("keeps the demo disclosure and controls visible through the mobile comparison viewer", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo");
+  await page.locator("#workbench-title").scrollIntoViewIfNeeded();
+  await expect(page.getByText("Demo — sample data, nothing is saved")).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Reset demo" })).toBeInViewport();
+  await expect(page.getByRole("link", { name: "Start for real" })).toBeInViewport();
+  await page.getByRole("button", { name: "Reset demo" }).click();
+  await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
+  await page.getByRole("link", { name: "Start for real" }).click();
+  await expect(page).toHaveURL("/");
+});
+
+test("runs editable package playground examples and updates output from edited JSON", async ({ page }) => {
+  await page.goto("/demo");
+  const input = page.getByLabel("Editable JSON scenario");
+  await expect(page.locator("#playground-output")).toContainText("$.report.chart");
+  await input.fill((await input.inputValue()).replace('"line"', '"area"'));
+  await expect(page.locator("#playground-output")).toContainText('"area"');
+  await page.getByRole("button", { name: "Show redaction" }).click();
+  await expect(page.locator("#playground-output")).toContainText("[REDACTED]");
+  await page.getByRole("button", { name: "Run replay" }).click();
+  await expect(page.locator("#playground-output")).toContainText('"ok": true');
+});
+
+test("@claim:json-roundtrip imports package JSON in a fresh browser context and preserves the comparison", async ({ browser }) => {
+  const initial = { report: { chart: null } };
+  const good = createRecorder({ id: "roundtrip-good", name: "Roundtrip good", initialState: initial });
+  const failed = createRecorder({ id: "roundtrip-failed", name: "Roundtrip failed", initialState: initial });
+  good.record({ type: "chart.selected" }, { report: { chart: "bar" } });
+  failed.record({ type: "chart.selected" }, { report: { chart: "line" } });
+  const context = await browser.newContext({ baseURL: "http://127.0.0.1:4173" });
+  const page = await context.newPage();
+  try {
+    await page.goto("/");
+    await page.locator("#baseline-file").setInputFiles({ name: "known-good.json", mimeType: "application/json", buffer: Buffer.from(stringifyCapsule(good.capsule())) });
+    await page.locator("#candidate-file").setInputFiles({ name: "failed-run.json", mimeType: "application/json", buffer: Buffer.from(stringifyCapsule(failed.capsule())) });
+    await page.getByRole("button", { name: "Compare runs" }).click();
+    await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
+  } finally {
+    await context.close();
+  }
+});
+
+test("@claim:viewer-does-not-execute-capsules treats script-like run file text as data", async ({ page }) => {
+  const unexpectedRequests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).origin !== "http://127.0.0.1:4173") unexpectedRequests.push(request.url());
+  });
+  await page.addInitScript(() => (window as Window & { capsuleExecuted?: boolean }).capsuleExecuted = false);
+  await page.goto("/");
+  const hostile = capsuleFile("hostile");
+  const data = JSON.parse(hostile.buffer.toString()) as Record<string, unknown>;
+  data.metadata = { note: '<img src="https://example.invalid/pixel" onerror="window.capsuleExecuted=true">' };
+  data.initial = { label: "Initial state", capturedAt: "2026-08-30T00:00:00.000Z", hash: "fixture", state: { note: '<script>window.capsuleExecuted=true</script>' } };
+  hostile.buffer = Buffer.from(JSON.stringify(data));
+  await page.locator("#baseline-file").setInputFiles(hostile);
+  await page.locator("#candidate-file").setInputFiles(hostile);
+  await page.getByRole("button", { name: "Compare runs" }).click();
+  expect(await page.evaluate(() => (window as Window & { capsuleExecuted?: boolean }).capsuleExecuted)).toBe(false);
+  expect(unexpectedRequests).toEqual([]);
+});
+
+test("moves focus to each destination heading after forward and back navigation", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Privacy" }).first().click();
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole("heading", { name: "Find the state change that broke the second run." })).toBeFocused();
+  await page.getByRole("link", { name: "Demo" }).first().click();
+  await expect(page.getByRole("heading", { name: "Find the state change that broke the second run." })).toBeFocused();
 });
 
 test("legal pages have one main heading and landmark", async ({ page }) => {
@@ -262,4 +343,11 @@ test("legal pages publish route-specific Open Graph and Twitter metadata", async
     await expect(page.locator("meta[name='twitter:description']")).toHaveAttribute("content", /.+/);
     await expect(page.locator("meta[name='twitter:image']")).toHaveAttribute("content", "https://state-transition-capsule.sociobot.in/og-instrument-trace.webp");
   }
+});
+
+test("404 publishes route-specific social metadata", async ({ page }) => {
+  await page.goto("/404.html");
+  await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", "https://state-transition-capsule.sociobot.in/404.html");
+  await expect(page.locator("meta[property='og:title']")).toHaveAttribute("content", "Page not found — State Transition Capsule");
+  await expect(page.locator("meta[name='twitter:title']")).toHaveAttribute("content", "Page not found — State Transition Capsule");
 });

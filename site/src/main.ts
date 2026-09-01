@@ -3,6 +3,8 @@ import {
   compareCapsules,
   createRecorder,
   parseCapsule,
+  replayCapsule,
+  stringifyCapsule,
   type Capsule,
   type ComparisonReport,
   type JSONValue
@@ -16,6 +18,7 @@ const RUNS_KEY = "stc:saved-runs";
 const HISTORY_KEY = "stc:case-history";
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const DEMO_MODE = location.pathname.replace(/\/$/, "") === "/demo" || new URLSearchParams(location.search).get("demo") === "1";
+const ROUTE_FOCUS_KEY = "stc:route-focus";
 
 function storageKey(key: string): string {
   return DEMO_MODE ? `demo:${key}` : key;
@@ -30,10 +33,63 @@ let candidate: Capsule | undefined;
 let latestReport: ComparisonReport | undefined;
 let studioUnlocked = false;
 
+type PlaygroundScenario = {
+  initial: JSONValue;
+  event: JSONValue;
+  knownGood: JSONValue;
+  failedRun: JSONValue;
+  redact?: string[];
+};
+
+const playgroundExamples: Record<"compare" | "redaction" | "replay", { label: string; scenario: PlaygroundScenario }> = {
+  compare: {
+    label: "Comparison result",
+    scenario: {
+      initial: { report: { chart: null }, session: { token: "sample-secret" } },
+      event: { type: "chart.selected" },
+      knownGood: { report: { chart: "bar" }, session: { token: "sample-secret" } },
+      failedRun: { report: { chart: "line" }, session: { token: "sample-secret" } },
+      redact: ["session.token"]
+    }
+  },
+  redaction: {
+    label: "Redaction result",
+    scenario: {
+      initial: { account: { token: "sample-secret" }, report: { chart: null } },
+      event: { type: "report.opened", token: "event-secret" },
+      knownGood: { account: { token: "sample-secret" }, report: { chart: "bar" } },
+      failedRun: { account: { token: "sample-secret" }, report: { chart: "line" } },
+      redact: ["account.token", "token"]
+    }
+  },
+  replay: {
+    label: "Replay result",
+    scenario: {
+      initial: { count: 0 },
+      event: { type: "set-count", count: 1 },
+      knownGood: { count: 1 },
+      failedRun: { count: 2 },
+      redact: []
+    }
+  }
+};
+
 function element<T extends HTMLElement>(id: string): T {
   const found = document.getElementById(id);
   if (!found) throw new Error(`Missing element #${id}`);
   return found as T;
+}
+
+function focusRouteHeading(): void {
+  const heading = document.querySelector<HTMLElement>("main h1");
+  const announcer = document.getElementById("route-announcer");
+  const shouldFocus = document.referrer.startsWith(location.origin) || sessionStorage.getItem(ROUTE_FOCUS_KEY) === "1";
+  if (!heading || !shouldFocus) return;
+  sessionStorage.removeItem(ROUTE_FOCUS_KEY);
+  window.setTimeout(() => {
+    heading.focus({ preventScroll: true });
+    if (announcer) announcer.textContent = document.title;
+  }, 0);
 }
 
 const compareButton = element<HTMLButtonElement>("compare-button");
@@ -67,7 +123,7 @@ function updateBay(bay: Bay, capsule?: Capsule): void {
   const section = document.querySelector<HTMLElement>(`[data-bay="${bay}"]`);
   if (!section) return;
   section.classList.toggle("loaded", Boolean(capsule));
-  status.textContent = capsule ? `${capsule.name} · ${capsule.transitions.length} transitions` : "No capsule loaded";
+  status.textContent = capsule ? `${capsule.name} · ${capsule.transitions.length} transitions` : "No run file loaded";
   compareButton.disabled = !(baseline && candidate);
 }
 
@@ -80,7 +136,7 @@ function assignCapsule(bay: Bay, capsule: Capsule): void {
   if (bay === "baseline") baseline = capsule;
   else candidate = capsule;
   updateBay(bay, capsule);
-  setMessage(`${capsule.name} loaded into ${bay === "baseline" ? "known-good" : "changed"} bay.`);
+  setMessage(`${capsule.name} loaded into the ${bay === "baseline" ? "known-good" : "failed"} run file bay.`);
   storeRuns();
 }
 
@@ -121,7 +177,7 @@ function renderReport(report: ComparisonReport): void {
   kicker.className = "eyebrow";
 
   if (report.equal) {
-    kicker.textContent = "No divergence found";
+    kicker.textContent = "No changed field found";
     const title = document.createElement("h3");
     title.id = "result-title";
     title.textContent = "These retained states match.";
@@ -188,7 +244,7 @@ function compareRuns(): void {
     renderReport(latestReport);
     compareButton.disabled = false;
     compareButton.textContent = "Compare again";
-    setMessage(latestReport.equal ? "Comparison complete. No divergence found." : `Comparison complete. First divergence: ${latestReport.firstDivergence!.path}`);
+    setMessage(latestReport.equal ? "Comparison complete. No changed field found." : `Comparison complete. First changed field: ${latestReport.firstDivergence!.path}`);
     storeRuns();
   });
 }
@@ -231,7 +287,7 @@ function setStudio(unlocked: boolean, note?: string): void {
   studioUnlocked = unlocked;
   rememberToggle.disabled = !unlocked;
   element("license-state").textContent = unlocked ? "Studio active" : "Studio locked";
-  element("license-note").textContent = note ?? (unlocked ? "Local history and case labels are available." : "The free comparison bench remains fully available.");
+  element("license-note").textContent = note ?? (unlocked ? "Local history and case labels are available." : "The free comparison viewer remains fully available.");
   element("history-panel").hidden = !unlocked;
   if (unlocked) {
     renderHistory();
@@ -275,7 +331,7 @@ function restoreRuns(): void {
     if (saved.candidate) { candidate = saved.candidate; updateBay("candidate", candidate); }
     if (saved.baseline || saved.candidate) {
       rememberToggle.checked = true;
-      setMessage("Restored locally saved capsules.");
+      setMessage("Restored locally saved run files.");
     }
   } catch { localStorage.removeItem(storageKey(RUNS_KEY)); }
 }
@@ -342,7 +398,7 @@ function bindLicense(): void {
     }
     let history: CaseRecord[] = [];
     try { history = JSON.parse(localStorage.getItem(storageKey(HISTORY_KEY)) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
-    history.unshift({ label: label.value.trim(), path: latestReport.firstDivergence?.path ?? "No divergence", at: new Date().toISOString() });
+    history.unshift({ label: label.value.trim(), path: latestReport.firstDivergence?.path ?? "No changed field", at: new Date().toISOString() });
     localStorage.setItem(storageKey(HISTORY_KEY), JSON.stringify(history.slice(0, 50)));
     label.value = "";
     renderHistory();
@@ -365,9 +421,70 @@ function bindCopyButtons(): void {
   });
 }
 
+function scenarioCapsules(scenario: PlaygroundScenario): [Capsule, Capsule] {
+  const options = { initialState: scenario.initial, redact: scenario.redact ?? [], retention: { maxTransitions: 10 }, now: () => new Date("2026-09-01T09:00:00.000Z") };
+  const good = createRecorder({ ...options, id: "playground-good", name: "Playground known-good run" });
+  good.record(scenario.event, scenario.knownGood);
+  const failed = createRecorder({ ...options, id: "playground-failed", name: "Playground failed run" });
+  failed.record(scenario.event, scenario.failedRun);
+  // Parsing the package's own JSON output exercises the same export/import path shown in the viewer.
+  return [parseCapsule(stringifyCapsule(good.capsule())), parseCapsule(stringifyCapsule(failed.capsule()))];
+}
+
+function playgroundInput(): HTMLTextAreaElement {
+  return element<HTMLTextAreaElement>("playground-input");
+}
+
+function writePlaygroundExample(example: "compare" | "redaction" | "replay"): void {
+  playgroundInput().value = JSON.stringify(playgroundExamples[example].scenario, null, 2);
+  runPlayground(example);
+}
+
+function runPlayground(mode: "compare" | "redaction" | "replay" = "compare"): void {
+  const output = element<HTMLElement>("playground-output");
+  const status = element<HTMLElement>("playground-status");
+  try {
+    const scenario = JSON.parse(playgroundInput().value) as PlaygroundScenario;
+    const [good, failed] = scenarioCapsules(scenario);
+    let result: unknown;
+    if (mode === "redaction") {
+      result = { redactedInitialState: good.initial.state, redactedEvent: good.transitions[0]?.event };
+    } else if (mode === "replay") {
+      const replay = createRecorder({ id: "playground-replay", name: "Playground replay", initialState: { count: 0 }, now: () => new Date("2026-09-01T09:00:00.000Z") });
+      replay.record({ type: "set-count", count: 1 }, { count: 1 });
+      result = replayCapsule(replay.capsule(), (state, event) => {
+        const current = state as { count: number };
+        const action = event as { type?: string; count?: number };
+        return action.type === "set-count" ? { count: action.count ?? current.count } : current;
+      });
+    } else {
+      result = compareCapsules(good, failed);
+    }
+    output.textContent = JSON.stringify(result, null, 2);
+    status.textContent = `${playgroundExamples[mode].label} updated from the package.`;
+  } catch (error) {
+    output.textContent = "";
+    status.textContent = error instanceof Error ? `Check the JSON: ${error.message}` : "Check the JSON and try again.";
+  }
+}
+
+function bindPlayground(): void {
+  const input = playgroundInput();
+  let timer = 0;
+  input.addEventListener("input", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => runPlayground("compare"), 120);
+  });
+  for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-playground-example]"))) {
+    button.addEventListener("click", () => writePlaygroundExample(button.dataset.playgroundExample as "compare" | "redaction" | "replay"));
+  }
+  writePlaygroundExample("compare");
+}
+
 bindImports();
 bindCopyButtons();
 bindLicense();
+bindPlayground();
 updateConnection();
 window.addEventListener("online", updateConnection);
 window.addEventListener("offline", updateConnection);
@@ -376,7 +493,7 @@ function loadSampleRuns(): void {
   [baseline, candidate] = makeExamples();
   updateBay("baseline", baseline);
   updateBay("candidate", candidate);
-  setMessage("Example runs loaded. Compare them to locate the drift.");
+  setMessage("Example runs loaded. Compare them to locate the first changed field.");
   emptyResult.hidden = false;
   resultContent.hidden = true;
   storeRuns();
@@ -387,7 +504,7 @@ rememberToggle.addEventListener("change", () => {
   if (rememberToggle.checked) storeRuns();
   else {
     localStorage.removeItem(storageKey(RUNS_KEY));
-    setMessage("Saved capsules removed from this device.");
+    setMessage("Saved run files removed from this device.");
   }
 });
 
@@ -405,8 +522,13 @@ if (DEMO_MODE) {
   element<HTMLAnchorElement>("start-real").addEventListener("click", () => {
     for (const key of [RUNS_KEY, HISTORY_KEY, LICENSE_KEY, VERDICT_KEY]) localStorage.removeItem(`demo:${key}`);
   });
+  document.body.classList.add("demo-mode");
   window.requestAnimationFrame(() => element("workbench-title").scrollIntoView({ block: "start" }));
 }
+
+focusRouteHeading();
+window.addEventListener("pageshow", focusRouteHeading);
+window.addEventListener("pagehide", () => sessionStorage.setItem(ROUTE_FOCUS_KEY, "1"));
 
 if (import.meta.env.PROD && "serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", () => void navigator.serviceWorker.register("/sw.js"));

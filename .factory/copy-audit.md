@@ -1,55 +1,59 @@
-# Landing-page copy audit
+# Copy audit — 1 September 2026
 
-Audited 30 August 2026. Counts treat hyphenated terms and paths as one word. Every landing-page sentence is at or below the 22-word cap. The headline is nine words. No banned term appears in landing-page copy.
+Counts use whitespace-separated words. Code, URLs, navigation labels, and required legal text are excluded. Every landing-page sentence is at or below 22 words. No banned plain-words term appears.
 
-## Sentences and word counts
+## Landing-page sentences
 
 ```text
  9  Find the state change that broke the second run.
 17  For developers debugging repeat-run failures, it compares two state histories and names the first field that changed.
  8  Loads two sample runs in a separate demo.
- 7  Capsules stay in this tab by default.
+ 8  Run files stay in this tab by default.
  6  Works offline after the first visit.
  7  Free core tools · Studio costs $39 once.
- 3  Two recorded runs.
- 3  One exact divergence.
- 9  Load a known-good capsule and the run that drifted.
+11  The viewer compares two runs and marks the first changed field.
+12  Load a known-good run file and a failed run file.
  7  Files stay in this tab by default.
-15  Use your exported JSON files or load the example to see the first divergent field.
- 7  Capture only the state your bug changed.
-10  Capsules capture only the state and domain events you declare.
-13  That makes failures portable, reviewable, and safe to inspect on a second machine.
+15  Import JSON run files or load the example to see the first changed field.
+ 3  Edit the JSON.
+16  The browser records two run files, exports and imports them, then compares them locally.
+12  Change a value such as "line", then pause briefly to update the output.
+15  Run files contain the state and events you declare.
+11  Review JSON on another machine, and redact sensitive fields before recording.
  7  Wrap the point where durable state changes.
- 7  Set a transition limit for bounded evidence.
-10  Replace exact or wildcard paths before anything reaches the capsule.
-12  Align snapshots in order and stop at the first changed JSON path.
- 7  A narrow API for evidence you own.
-10  ESM, CommonJS, TypeScript declarations, and no runtime dependencies ship together.
- 5  Keep a local case history.
-10  The open package and viewer handle the complete capture-and-compare workflow.
-13  Studio adds saved comparison labels and local history for teams who revisit incidents.
- 5  $39 one time · per user.
- 7  Sociobot/Dodo is the merchant of record.
- 7  The free comparison bench remains fully available.
+11  Set how many recent transitions each run file keeps.
+10  Replace exact or wildcard paths before anything reaches the run file.
+11  Align snapshots in order and stop at the first changed field.
+12  Build this source checkout with npm pack to create a local package tarball.
+12  The open package records run files, and the viewer compares them.
+10  Studio saves labels and history in this browser.
+ 6  $39 one time · per user.
  5  Compare recorded state changes locally.
 ```
 
-UI labels and navigation were reviewed separately. They use direct nouns and result verbs: **Try it with sample data**, **Compare runs**, **Choose JSON**, **Reset demo**, and **Start for real**.
+## README opening
+
+```text
+15  Record state before and after application events.
+12  Redact secrets, replay transitions, and find the first changed field between runs.
+13  For application developers debugging a second run that fails after persisted state changes.
+15  The browser viewer compares JSON run files locally and does not execute their contents.
+```
 
 ## Terminology
 
 | Concept | One term used |
 | --- | --- |
-| Portable recorded evidence file | capsule |
-| Known successful execution | known-good run |
-| Later failing execution | changed run |
-| Earliest unequal state | first divergence |
-| Browser comparison interface | workbench |
-| Paid local-history tier | Studio |
-| Isolated bundled example | demo |
+| JSON artifact from a recorded run | run file |
+| Successful input | known-good run file |
+| Later failure input | failed run file |
+| Earliest unequal result | first changed field |
+| Browser comparison interface | comparison viewer |
+| Paid local-history tier | Capsule Studio |
+| Isolated bundled sample | demo |
 
-## First-screen read-aloud check
+## First-screen read-aloud
 
 “Find the state change that broke the second run. For developers debugging repeat-run failures, it compares two state histories and names the first field that changed. Try it with sample data.”
 
-This states the job, audience, outcome, and first action in three short sentences.
+This states the task, audience, result, and first action in one screen.

@@ -1,10 +1,12 @@
 # Demo sandbox
 
-- URL: `https://state-transition-capsule.sociobot.in/demo` (local: `http://127.0.0.1:4173/demo`).
+- URL: `https://state-transition-capsule.sociobot.in/demo` (also `?demo=1`; local: `http://127.0.0.1:4173/demo`).
 - Entry: the first-screen **Try it with sample data** link opens the demo in one click.
 - Sample: a known-good quarterly report run and a second run whose `chart.selected` transition changes `$.report.chart` from `bar` to `line`.
-- First result: the sample loads and compares automatically. The workbench shows the exact first divergence.
-- Reset: **Reset demo** recreates both bundled capsules and removes all `demo:` storage keys.
+- First result: the sample loads and compares automatically. The comparison viewer shows the exact first changed field.
+- Playground: the editable JSON playground records two run files with the library, exports and imports them, then updates comparison output locally. Its Compare, Redaction, and Replay examples use the shipped package functions.
+- Reset: **Reset demo** recreates both bundled run files and removes all `demo:` storage keys.
 - Exit: **Start for real** removes all `demo:` keys and returns to `/`.
+- Mobile boundary: the demo banner stays sticky over the comparison viewer and keeps **Reset demo** and **Start for real** available while scrolling.
 - Isolation: demo mode never reads the normal license, saved-run, or case-history keys. Its reserved namespace is `demo:`. The current sample requires no persistence, so resetting leaves that namespace empty.
 - Network: the sample comparison uses only bundled code and data. It does not call the license API or any other external origin.

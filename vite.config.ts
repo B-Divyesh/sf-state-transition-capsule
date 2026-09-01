@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, relative } from "node:path";
 
@@ -28,6 +28,26 @@ function publicUrl(file: string): string {
   if (file === "index.html") return "/";
   if (file.endsWith("/index.html")) return `/${file.slice(0, -"index.html".length)}`;
   return `/${file}`;
+}
+
+function replaceMeta(document: string, selector: RegExp, value: string): string {
+  return document.replace(selector, value);
+}
+
+function emitDemoDocument(): void {
+  const home = readFileSync(join(siteOutput, "index.html"), "utf8");
+  const demo = [
+    [/<meta name="description" content="[^"]*"\s*\/?\s*>/, '<meta name="description" content="Try two sample run files in the State Transition Capsule comparison viewer." />'],
+    [/<link rel="canonical" href="[^"]*"\s*\/?\s*>/, '<link rel="canonical" href="https://state-transition-capsule.sociobot.in/demo" />'],
+    [/<meta property="og:title" content="[^"]*"\s*\/?\s*>/, '<meta property="og:title" content="Demo — State Transition Capsule" />'],
+    [/<meta property="og:description" content="[^"]*"\s*\/?\s*>/, '<meta property="og:description" content="Try two sample run files and find the first changed field." />'],
+    [/<meta property="og:url" content="[^"]*"\s*\/?\s*>/, '<meta property="og:url" content="https://state-transition-capsule.sociobot.in/demo" />'],
+    [/<meta name="twitter:title" content="[^"]*"\s*\/?\s*>/, '<meta name="twitter:title" content="Demo — State Transition Capsule" />'],
+    [/<meta name="twitter:description" content="[^"]*"\s*\/?\s*>/, '<meta name="twitter:description" content="Try two sample run files and find the first changed field." />'],
+    [/<title>[^<]*<\/title>/, '<title>Demo — State Transition Capsule</title>']
+  ].reduce((document, [selector, replacement]) => replaceMeta(document, selector as RegExp, replacement as string), home);
+  mkdirSync(join(siteOutput, "demo"), { recursive: true });
+  writeFileSync(join(siteOutput, "demo", "index.html"), demo);
 }
 
 export default defineConfig({
@@ -58,6 +78,7 @@ export default defineConfig({
   plugins: [{
     name: "capsule-offline-shell",
     closeBundle() {
+      emitDemoDocument();
       // Vite removes empty HTML entry chunks after Rollup's generateBundle
       // phase, but leaves their sourcemaps. Scan the final output instead of
       // predicting it from Rollup's intermediate bundle.

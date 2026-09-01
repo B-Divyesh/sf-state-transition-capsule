@@ -25,20 +25,20 @@
     <a class="skip-link" href="#main">Skip to main content</a>
     <header class="site-header">
       <a class="brand" href="/" aria-label="ST/C State Transition Capsule home"><span class="brand-mark" aria-hidden="true">ST/C</span><span>State Transition Capsule</span></a>
-      <nav aria-label="Primary navigation"><a href="/demo">Demo</a><a href="/#workbench">Workbench</a><a href="/#api">API</a><a href="/privacy/">Privacy</a></nav>
+      <nav aria-label="Primary navigation"><a href="/demo">Demo</a><a href="/#workbench">Viewer</a><a href="/#api">API</a><a href="/privacy/">Privacy</a></nav>
     </header>
     <main id="main" class="legal-page section-shell">
       <article>
         <p class="eyebrow">Terms of use</p>
-        <h1>Terms for using State Transition Capsule</h1>
+        <h1 tabindex="-1">Terms for using State Transition Capsule</h1>
         <p class="updated">Effective 28 August 2026</p>
         <p>These terms apply to the State Transition Capsule website and the paid Capsule Studio license. The open-source npm package is separately available under the MIT License.</p>
         <h2>The service</h2>
         <p>The viewer helps you inspect state evidence locally. It does not promise to find every application defect and does not execute recorded effects. You are responsible for verifying results and protecting any sensitive capsule you create or share.</p>
         <h2>Capsule Studio</h2>
-        <p>Capsule Studio costs $39 as a one-time purchase per user. It adds local history and incident labels. The comparison workbench is not a paid feature. A license may be moved between your own devices using the restore field.</p>
+        <p>Capsule Studio costs $39 as a one-time purchase per user. It adds local history and incident labels. The comparison viewer is not a paid feature. A license may be moved between your own devices using the restore field.</p>
         <h2>Checkout and refunds</h2>
-        <p>Sociobot/Dodo is the merchant of record. The hosted checkout presents its current payment and refund terms. Taxes and payment terms shown there control if they differ from estimates on this site.</p>
+        <p>The hosted checkout presents its current payment and refund terms. Taxes and payment terms shown there control if they differ from estimates on this site.</p>
         <h2>Acceptable use</h2>
         <p>Do not use the service to violate law, distribute malware, or process data you have no right to possess. Do not attempt to bypass paid feature checks or interfere with the billing API.</p>
         <h2>Warranty and liability</h2>
@@ -48,6 +48,7 @@
       </article>
     </main>
     <footer class="site-footer section-shell"><p><span class="brand-mark" aria-hidden="true">ST/C</span> Compare recorded state changes locally.</p><nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-state-transition-capsule">Source on GitHub</a></nav><p>Built by Param Factory · v0.1.0</p></footer>
+    <p class="route-announcer visually-hidden" id="route-announcer" aria-live="polite" aria-atomic="true"></p>
     <script type="module" src="/src/legal.ts"></script>
   </body>
 </html>

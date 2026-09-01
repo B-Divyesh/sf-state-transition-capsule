@@ -17,7 +17,7 @@
     <meta name="twitter:title" content="State Transition Capsule — Compare state changes" />
     <meta name="twitter:description" content="Compare two recorded runs and find the first state field that changed." />
     <meta name="twitter:image" content="https://state-transition-capsule.sociobot.in/og-instrument-trace.webp" />
-    <title>State Transition Capsule — Find the first divergent state</title>
+    <title>State Transition Capsule — Find the first changed field</title>
     <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal-SiLHXWCe.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/assets/ibm-plex-mono-latin-400-normal-Dm_PoFIZ.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -32,7 +32,7 @@
       </a>
       <nav aria-label="Primary navigation">
         <a href="/demo">Demo</a>
-        <a href="#workbench">Workbench</a>
+        <a href="#workbench">Viewer</a>
         <a href="#api">API</a>
         <a href="/privacy/">Privacy</a>
       </nav>
@@ -55,17 +55,15 @@
           <div class="hero-actions">
             <a class="button button-primary" href="/demo">Try it with sample data</a>
             <span class="action-note">Loads two sample runs in a separate demo.</span>
-            <button class="install-command" type="button" data-copy="npm install state-transition-capsule">
-              <span>npm i state-transition-capsule</span><span class="copy-label">Copy</span>
-            </button>
+            <a class="button button-secondary" href="#api">Read package setup</a>
           </div>
           <ul class="signal-list" aria-label="Product guarantees">
-            <li>Capsules stay in this tab by default</li><li>Works offline after the first visit</li><li>Free core tools · Studio costs $39 once</li>
+            <li>Run files stay in this tab by default</li><li>Works offline after the first visit</li><li>Free core tools · Studio costs $39 once</li>
           </ul>
         </div>
         <figure class="hero-visual">
-          <img src="/instrument-trace.webp" width="1152" height="768" alt="Illustrated diagnostic instrument feeding two state cartridges into one divergence trace" fetchpriority="high" />
-          <figcaption>Two recorded runs. One exact divergence.</figcaption>
+          <img src="/instrument-trace.webp" width="1152" height="768" alt="Illustrated diagnostic instrument feeding two state cartridges into one first-change trace" fetchpriority="high" />
+          <figcaption>The viewer compares two runs and marks the first changed field.</figcaption>
         </figure>
       </section>
 
@@ -74,18 +72,18 @@
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Compare two runs</p>
-              <h2 id="workbench-title">Divergence workbench</h2>
-              <p>Load a known-good capsule and the run that drifted. Files stay in this tab by default.</p>
+              <h2 id="workbench-title">Comparison viewer</h2>
+              <p>Load a known-good run file and a failed run file. Files stay in this tab by default.</p>
             </div>
             <p class="connection-state" id="connection-state"><span class="status-lamp" aria-hidden="true"></span><span>Ready offline</span></p>
           </div>
 
-          <div class="import-grid" aria-label="Capsule inputs">
+          <div class="import-grid" aria-label="Run file inputs">
             <section class="import-bay" data-bay="baseline">
               <p class="bay-number" aria-hidden="true">01</p>
               <div>
-                <h3>Known-good run</h3>
-                <p class="bay-status" id="baseline-status">No capsule loaded</p>
+                <h3>Known-good run file</h3>
+                <p class="bay-status" id="baseline-status">No run file loaded</p>
               </div>
               <label class="button button-secondary file-label" for="baseline-file">Choose JSON</label>
               <input id="baseline-file" class="visually-hidden" type="file" accept="application/json,.json" />
@@ -94,8 +92,8 @@
             <section class="import-bay" data-bay="candidate">
               <p class="bay-number" aria-hidden="true">02</p>
               <div>
-                <h3>Changed run</h3>
-                <p class="bay-status" id="candidate-status">No capsule loaded</p>
+                <h3>Failed run file</h3>
+                <p class="bay-status" id="candidate-status">No run file loaded</p>
               </div>
               <label class="button button-secondary file-label" for="candidate-file">Choose JSON</label>
               <input id="candidate-file" class="visually-hidden" type="file" accept="application/json,.json" />
@@ -117,8 +115,8 @@
             <div class="empty-result" id="empty-result">
               <div class="trace-mark" aria-hidden="true"><i></i><b></b><i></i></div>
               <div>
-                <h3 id="result-title">Awaiting two capsules</h3>
-                <p>Use your exported JSON files or load the example to see the first divergent field.</p>
+                <h3 id="result-title">Awaiting two run files</h3>
+                <p>Import JSON run files or load the example to see the first changed field.</p>
               </div>
             </div>
             <div class="result-content" id="result-content" hidden></div>
@@ -126,16 +124,43 @@
         </div>
       </section>
 
+      <section class="playground section-shell" id="playground" aria-labelledby="playground-title">
+        <div class="section-intro">
+          <p class="eyebrow">Editable library playground</p>
+          <h2 id="playground-title">Change sample state and inspect the package output.</h2>
+          <p>Edit the JSON. The browser records two run files, exports and imports them, then compares them locally.</p>
+        </div>
+        <div class="playground-console">
+          <div class="playground-toolbar" aria-label="Playground examples">
+            <button class="text-button" type="button" data-playground-example="compare">Compare example</button>
+            <button class="text-button" type="button" data-playground-example="redaction">Show redaction</button>
+            <button class="text-button" type="button" data-playground-example="replay">Run replay</button>
+          </div>
+          <div class="playground-grid">
+            <div>
+              <label for="playground-input">Editable JSON scenario</label>
+              <textarea id="playground-input" spellcheck="false" aria-describedby="playground-help"></textarea>
+              <p id="playground-help">Change a value such as <code>"line"</code>, then pause briefly to update the output.</p>
+            </div>
+            <div>
+              <p class="playground-output-label">Package output</p>
+              <pre id="playground-output" tabindex="0" aria-label="Package output"></pre>
+              <p class="bench-message" id="playground-status" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="method section-shell" aria-labelledby="method-title">
         <div class="section-intro">
           <p class="eyebrow">How it works</p>
           <h2 id="method-title">Capture only the state your bug changed.</h2>
-          <p>Capsules capture only the state and domain events you declare. That makes failures portable, reviewable, and safe to inspect on a second machine.</p>
+          <p>Run files contain the state and events you declare. Review JSON on another machine, and redact sensitive fields before recording.</p>
         </div>
         <ol class="method-list">
-          <li><span>01</span><h3>Record</h3><p>Wrap the point where durable state changes. Set a transition limit for bounded evidence.</p></li>
-          <li><span>02</span><h3>Redact</h3><p>Replace exact or wildcard paths before anything reaches the capsule.</p></li>
-          <li><span>03</span><h3>Compare</h3><p>Align snapshots in order and stop at the first changed JSON path.</p></li>
+          <li><span>01</span><h3>Record</h3><p>Wrap the point where durable state changes. Set how many recent transitions each run file keeps.</p></li>
+          <li><span>02</span><h3>Redact</h3><p>Replace exact or wildcard paths before anything reaches the run file.</p></li>
+          <li><span>03</span><h3>Compare</h3><p>Align snapshots in order and stop at the first changed field.</p></li>
         </ol>
       </section>
 
@@ -143,9 +168,9 @@
         <div class="section-shell api-grid">
           <div class="section-intro">
             <p class="eyebrow">Package contents</p>
-            <h2 id="api-title">A narrow API for evidence you own.</h2>
-            <p>ESM, CommonJS, TypeScript declarations, and no runtime dependencies ship together.</p>
-            <a class="inline-link" href="https://github.com/B-Divyesh/sf-state-transition-capsule#readme">Read the complete API guide on GitHub <span aria-hidden="true">→</span></a>
+            <h2 id="api-title">Six functions to record, replay, and compare state.</h2>
+            <p>Build this source checkout with <code>npm pack</code> to create a local package tarball.</p>
+            <a class="inline-link" href="https://github.com/B-Divyesh/sf-state-transition-capsule#readme">Read the API guide on GitHub <span aria-hidden="true">→</span></a>
           </div>
           <div class="code-panel">
             <div class="code-caption"><span>capture.ts</span><button type="button" data-copy-target="api-code">Copy code</button></div>
@@ -168,20 +193,20 @@ run.record(event, nextState);</code></pre>
           <div class="studio-copy">
             <p class="eyebrow">One-time purchase</p>
             <h2 id="studio-title">Keep a local case history.</h2>
-            <p>The open package and viewer handle the complete capture-and-compare workflow. Studio adds saved comparison labels and local history for teams who revisit incidents.</p>
+            <p>The open package records run files, and the viewer compares them. Studio saves labels and history in this browser.</p>
             <p class="price"><strong>$39</strong> one time · per user</p>
             <ul><li>Saved local comparison history</li><li>Named incident labels</li></ul>
             <div class="studio-actions">
               <a class="button button-primary" href="https://api.sociobot.in/api/v1/products/state-transition-capsule/checkout">Buy Studio in hosted checkout</a>
               <button class="text-button" id="restore-button" type="button">Restore a license</button>
             </div>
-            <p class="fine-print">Sociobot/Dodo is the merchant of record. <a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a></p>
+            <p class="fine-print"><a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a></p>
           </div>
           <div class="license-console" id="license-console">
             <span class="dial" aria-hidden="true"></span>
             <p class="panel-kicker">License status</p>
             <h3 id="license-state">Studio locked</h3>
-            <p id="license-note" role="status" aria-live="polite">The free comparison bench remains fully available.</p>
+            <p id="license-note" role="status" aria-live="polite">The free comparison viewer remains fully available.</p>
             <form id="license-form" hidden>
               <label for="license-input">License token</label>
               <input id="license-input" name="license" autocomplete="off" spellcheck="false" required />
@@ -189,7 +214,7 @@ run.record(event, nextState);</code></pre>
             </form>
             <div id="history-panel" hidden>
               <label for="case-label">Label this comparison</label>
-              <div class="label-row"><input id="case-label" maxlength="80" /><button class="button button-light" id="save-case" type="button">Save</button></div>
+              <div class="label-row"><input id="case-label" maxlength="80" /><button class="button button-light" id="save-case" type="button">Save case</button></div>
               <div id="case-history"></div>
             </div>
           </div>
@@ -203,6 +228,7 @@ run.record(event, nextState);</code></pre>
       <p>Built by Param Factory · v0.1.0</p>
     </footer>
 
+    <p class="route-announcer visually-hidden" id="route-announcer" aria-live="polite" aria-atomic="true"></p>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

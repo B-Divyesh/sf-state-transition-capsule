@@ -15,6 +15,16 @@ const clock = (() => {
 })();
 
 describe("createRecorder", () => {
+  it("@claim:recording records state and events into a JSON run file", () => {
+    const recorder = createRecorder({ name: "recording", id: "recording", initialState: { count: 0 }, now: clock });
+    recorder.record({ type: "increment" }, { count: 1 });
+    const json = stringifyCapsule(recorder.capsule());
+    expect(JSON.parse(json)).toMatchObject({
+      format: "state-transition-capsule/v1",
+      transitions: [{ name: "increment", event: { type: "increment" }, after: { state: { count: 1 } } }]
+    });
+  });
+
   it("@claim:redaction records the documented example and redacts state, events, and metadata", () => {
     const initial = { report: null, auth: { token: "secret" }, profile: { password: "also-secret" } };
     const recorder = createRecorder({
@@ -101,6 +111,14 @@ describe("replayCapsule", () => {
 });
 
 describe("validation and state diff", () => {
+  it("@claim:capsule-format-v1 serializes and accepts the v1 marker while rejecting another marker", () => {
+    const recorder = createRecorder({ name: "format", id: "format", initialState: { count: 0 }, now: clock });
+    const json = stringifyCapsule(recorder.capsule());
+    expect(JSON.parse(json).format).toBe("state-transition-capsule/v1");
+    expect(parseCapsule(json).format).toBe("state-transition-capsule/v1");
+    expect(() => parseCapsule(json.replace("state-transition-capsule/v1", "state-transition-capsule/v2"))).toThrow("format must be state-transition-capsule/v1");
+  });
+
   it("rejects malformed files with actionable messages", () => {
     expect(validateCapsule({ format: "wrong" }).errors).toContain("format must be state-transition-capsule/v1");
     expect(() => parseCapsule("not json")).toThrow("not valid JSON");

@@ -1,20 +1,31 @@
 # State Transition Capsule
 
-Capture the state around domain events, remove secrets at the source, replay pure transitions, and locate the first field where a failing run left a known-good run.
+Record state before and after application events. Redact secrets, replay transitions, and find the first changed field between runs.
 
-It is for application developers debugging workflows that work once and drift after persisted client or server state changes. Capsules are portable JSON, the viewer runs entirely in the browser, and no recorded event is executed by the viewer.
+For application developers debugging a second run that fails after persisted state changes. The browser viewer compares JSON run files locally and does not execute their contents.
 
-Live site: <https://state-transition-capsule.sociobot.in>
+Live viewer: <https://state-transition-capsule.sociobot.in> · isolated sample: <https://state-transition-capsule.sociobot.in/demo>
 
-Try the isolated sample without setup: <https://state-transition-capsule.sociobot.in/demo>. It loads two report runs and identifies the first changed field.
+## Try the sample
 
-## Install
+Open `/demo` or add `?demo=1`. It loads two report run files in the separate `demo:` browser-storage namespace. The banner offers **Reset demo** and **Start for real**. The sample identifies `$.report.chart` as the first changed field.
+
+## Install from this source checkout
+
+Version 0.1.0 is ready to publish but is not yet available from the npm registry. Build a local tarball, then install that exact file in a fresh project:
 
 ```sh
-npm install state-transition-capsule
+npm ci
+npm run build
+npm pack
+mkdir ../stc-consumer && cd ../stc-consumer
+npm init -y
+npm install ../state-transition-capsule/state-transition-capsule-0.1.0.tgz
 ```
 
-## Record a run
+The package has no runtime dependencies and supports ESM, CommonJS, and TypeScript declarations.
+
+## Record a run file
 
 ```ts
 import { createRecorder, stringifyCapsule } from "state-transition-capsule";
@@ -34,21 +45,23 @@ recorder.record(
 const json = stringifyCapsule(recorder.capsule());
 ```
 
-Redaction occurs before state or events enter the capsule. Inputs are cloned and never mutated.
+Configured fields are redacted before state, event, and metadata values enter a run file. Inputs are cloned and never mutated.
 
-## Compare two runs
+## Compare two run files
 
 ```ts
 import { compareCapsules, parseCapsule } from "state-transition-capsule";
 
-const baseline = parseCapsule(baselineJson);
-const failing = parseCapsule(failingJson);
-const report = compareCapsules(baseline, failing);
+const knownGood = parseCapsule(knownGoodJson);
+const failedRun = parseCapsule(failedRunJson);
+const report = compareCapsules(knownGood, failedRun);
 
-console.log(report.firstDivergence?.path); // e.g. "$.report.chart"
+console.log(report.firstDivergence?.path); // "$.report.chart"
 ```
 
-## Replay a pure reducer
+Run files serialize as JSON, parse on another machine, and retain the same comparison result. The viewer handles their text as data; it does not run scripts or make external changes.
+
+## Replay a reducer
 
 ```ts
 import { replayCapsule } from "state-transition-capsule";
@@ -61,31 +74,33 @@ const report = replayCapsule(capsule, (state, event) => {
 if (!report.ok) console.error(report.firstDivergence);
 ```
 
-Replay calls only the reducer you supply in your own process. The local viewer never loads code from a capsule and never performs effects.
+Replay calls only the reducer supplied by your application process.
 
-## Develop and verify
+## Format and API
+
+The public API exports `createRecorder`, `compareCapsules`, `replayCapsule`, `parseCapsule`, `stringifyCapsule`, and `validateCapsule`, plus TypeScript types. Run files use the versioned media marker `state-transition-capsule/v1`.
+
+The free package records run files, exports and imports JSON, redacts values, compares state, and replays supplied reducers. Capsule Studio costs $39 once per user for local history and saved comparison labels. The comparison viewer remains available without Studio.
+
+## Privacy
+
+Run files may contain sensitive data. Prefer broad redaction rules and inspect exported JSON before sharing it. Redaction replaces values; it is not encryption. The viewer processes run files locally and does not upload their contents. Standard and demo visits make no telemetry, API, or third-party runtime request unless you choose license verification.
+
+Read the site [Privacy policy](https://state-transition-capsule.sociobot.in/privacy/) and [Terms](https://state-transition-capsule.sociobot.in/terms/).
+
+## Develop, test, and deploy
 
 Requires Node.js 20+.
 
 ```sh
 npm ci
-npm run dev          # local documentation/viewer
-npm test             # unit and browser tests
-npm run build        # package + site into dist/
+npm run dev          # documentation site and comparison viewer
+npm test             # unit, claim, build, browser, and offline checks
+npm run build        # package plus static site in dist/
 npm pack             # ready-to-publish tarball
 ```
 
-`npm run build:site` writes the static deployment to `dist/site/`. The `/demo` route uses bundled sample data and a separate `demo:` storage namespace. The standard and demo viewer make no telemetry, API, or third-party runtime request. Imported capsules stay in the current browser tab unless the user explicitly enables local retention.
-
-## Format and API
-
-The small public surface is `createRecorder`, `compareCapsules`, `replayCapsule`, `parseCapsule`, `stringifyCapsule`, and `validateCapsule`, plus exported TypeScript types. Capsules use the versioned media marker `state-transition-capsule/v1`.
-
-The free package and viewer include recording, JSON export/import, redaction, comparison, and deterministic replay. Capsule Studio costs $39 per user as a one-time purchase for local history and saved comparison labels. The comparison workbench stays available without Studio.
-
-## Privacy and security
-
-Capsules may contain sensitive data. Prefer broad redaction rules and inspect exported JSON before sharing. Redaction is irreversible replacement, not encryption. The viewer operates locally and does not upload capsule contents. See the site’s Privacy and Terms pages.
+`npm run build:site` writes the static deployment to `dist/site/`. The factory deployment workflow publishes that directory; this repository does not contain deployment credentials.
 
 ## License
 

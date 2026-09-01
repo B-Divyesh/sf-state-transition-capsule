@@ -94,6 +94,7 @@ img { display: block; max-width: 100%; }
 .demo-banner p { margin: 0; }
 .demo-banner > div { display: flex; align-items: center; gap: 20px; }
 .demo-banner a { min-height: 44px; display: inline-flex; align-items: center; font-weight: 700; }
+.demo-mode #workbench-title { scroll-margin-top: 132px; }
 
 .hero { min-height: 680px; padding: 72px 0 88px; display: grid; grid-template-columns: minmax(0, .95fr) minmax(480px, 1.05fr); align-items: center; gap: 52px; }
 .eyebrow, .panel-kicker { margin: 0 0 14px; color: var(--teal); font: 600 12px/1.3 "Plex Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
@@ -113,6 +114,8 @@ h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .button-primary:hover:not(:disabled) { background: var(--orange-dark); border-color: var(--orange-dark); }
 .button-secondary { color: var(--trace); border-color: #75847c; background: transparent; }
 .button-secondary:hover { border-color: var(--trace); background: rgb(255 255 255 / 5%); }
+.hero .button-secondary { color: var(--ink); border-color: var(--ink); }
+.hero .button-secondary:hover { border-color: var(--orange-dark); color: var(--ink); background: #e8dfca; }
 .button-light { color: var(--panel); background: var(--trace); border-color: var(--trace); }
 .install-command { display: inline-flex; align-items: center; min-height: 48px; padding: 0; border: 1px solid var(--line); border-radius: 3px; background: rgb(255 249 234 / 45%); cursor: pointer; overflow: hidden; }
 .install-command > span:first-child { padding: 0 14px; font: 400 16px/1 "Plex Mono", monospace; }
@@ -170,6 +173,17 @@ h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .diff-table code { white-space: pre-wrap; }
 .kind-tag { display: inline-block; padding: 2px 6px; color: var(--surface); background: var(--orange-dark); border-radius: 2px; text-transform: uppercase; font-size: 10px; }
 .identical-mark { display: inline-grid; width: 52px; height: 52px; place-items: center; color: var(--surface); background: var(--green); border-radius: 50%; font-size: 26px; }
+
+.playground { padding: 104px 0; }
+.playground-console { margin-top: 48px; color: var(--trace); border: 6px solid #30403c; border-radius: 7px; background: var(--panel); box-shadow: 10px 10px 0 #bcb39f; }
+.playground-toolbar { display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 12px 20px; border-bottom: 1px solid #4e625c; }
+.playground-toolbar .text-button { color: var(--trace); }
+.playground-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #4e625c; }
+.playground-grid > div { min-width: 0; padding: 22px; background: var(--panel); }
+.playground-grid label, .playground-output-label { display: block; margin: 0 0 8px; color: var(--trace-muted); font: 600 12px/1.3 "Plex Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+#playground-input { width: 100%; min-height: 370px; resize: vertical; padding: 14px; border: 1px solid #71847c; color: var(--trace); background: #101816; font: 400 13px/1.5 "Plex Mono", monospace; }
+.playground-grid > div > p:not(.playground-output-label, .bench-message) { margin: 8px 0 0; color: var(--trace-muted); font-size: 16px; }
+#playground-output { min-height: 370px; max-height: 480px; margin: 0; border: 1px solid #71847c; color: #d7eadf; background: #101816; }
 
 .method { padding: 116px 0 120px; }
 .section-intro { max-width: 690px; }
@@ -231,7 +245,8 @@ pre { margin: 0; padding: 24px; overflow: auto; font: 400 14px/1.7 "Plex Mono", 
 .legal-page .updated { font: 400 13px/1.4 "Plex Mono", monospace; }
 
 @media (max-width: 900px) {
-  .site-header nav a:not(:first-child) { display: none; }
+  .site-header { align-items: flex-start; padding-block: 12px; }
+  .site-header nav { justify-content: flex-end; flex-wrap: wrap; gap: 4px 12px; }
   .hero { min-height: auto; grid-template-columns: 1fr; padding: 52px 0 76px; }
   .hero-copy { position: relative; z-index: 1; }
   .hero-visual { width: min(680px, 100%); margin-inline: auto; }
@@ -240,7 +255,6 @@ pre { margin: 0; padding: 24px; overflow: auto; font: 400 14px/1.7 "Plex Mono", 
   .compare-axis { height: 48px; grid-template: 1fr / auto 1fr auto; align-items: center; padding: 0 24px; }
   .compare-axis i { width: auto; height: 1px; background: repeating-linear-gradient(to right, #809088 0 5px, transparent 5px 10px); }
   .site-footer { grid-template-columns: 1fr auto; }
-  .site-footer > p:last-child { display: none; }
 }
 
 @media (max-width: 620px) {
@@ -252,9 +266,10 @@ pre { margin: 0; padding: 24px; overflow: auto; font: 400 14px/1.7 "Plex Mono", 
   .lede { font-size: 18px; }
   .hero-actions { align-items: stretch; flex-direction: column; }
   .action-note { max-width: none; }
-  .demo-banner { position: static; justify-content: space-between; gap: 12px; padding-inline: 12px; }
-  .demo-banner p { max-width: 180px; }
-  .demo-banner > div { gap: 12px; }
+  .demo-banner { position: sticky; top: 0; justify-content: space-between; gap: 8px; padding: 8px 12px; }
+  .demo-banner p { max-width: 128px; font-size: 13px; }
+  .demo-banner > div { gap: 8px; font-size: 13px; }
+  .demo-banner .text-button, .demo-banner a { min-height: 44px; }
   .button-primary { box-shadow: 3px 3px 0 var(--ink); }
   .install-command { justify-content: space-between; }
   .hero-visual { height: 300px; }
@@ -280,11 +295,17 @@ pre { margin: 0; padding: 24px; overflow: auto; font: 400 14px/1.7 "Plex Mono", 
   .method-list li, .method-list li + li { padding: 22px 0 26px; border-right: 0; border-left: 0; border-bottom: 1px solid var(--line); }
   .method-list span { margin-bottom: 20px; }
   .api-section, .studio { padding: 80px 0; }
+  .playground { padding: 80px 0; }
+  .playground-console { margin-top: 32px; border-width: 4px; border-radius: 0; }
+  .playground-grid { grid-template-columns: 1fr; }
+  .playground-grid > div { padding: 16px; }
+  #playground-input, #playground-output { min-height: 300px; }
   .api-grid { gap: 42px; }
   pre { padding: 18px 14px; font-size: 12px; }
   .studio-copy, .license-console { padding: 32px 22px; }
   .site-footer { display: block; padding: 28px 0; }
   .site-footer nav { margin-top: 24px; }
+  .site-footer > p:last-child { margin-top: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

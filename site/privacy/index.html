@@ -25,18 +25,18 @@
     <a class="skip-link" href="#main">Skip to main content</a>
     <header class="site-header">
       <a class="brand" href="/" aria-label="ST/C State Transition Capsule home"><span class="brand-mark" aria-hidden="true">ST/C</span><span>State Transition Capsule</span></a>
-      <nav aria-label="Primary navigation"><a href="/demo">Demo</a><a href="/#workbench">Workbench</a><a href="/#api">API</a><a href="/privacy/">Privacy</a></nav>
+      <nav aria-label="Primary navigation"><a href="/demo">Demo</a><a href="/#workbench">Viewer</a><a href="/#api">API</a><a href="/privacy/">Privacy</a></nav>
     </header>
     <main id="main" class="legal-page section-shell">
       <article>
         <p class="eyebrow">Privacy policy</p>
-        <h1>How State Transition Capsule handles your data</h1>
+        <h1 tabindex="-1">How State Transition Capsule handles your data</h1>
         <p class="updated">Effective 28 August 2026</p>
         <p>State Transition Capsule is a local-first developer tool. Capsule files opened in the viewer are parsed and compared in your browser. We do not receive, upload, or inspect their contents.</p>
         <h2>Data stored on your device</h2>
         <p>By default, imported capsules live only in the current tab. Licensed Capsule Studio users can opt in to remembering imported capsules, case labels, and comparison history in browser local storage. License tokens and a time-stamped verification result are also stored locally. You can remove remembered capsules by turning off “Remember on this device,” and clear all data through your browser’s site-data controls.</p>
         <h2>License verification</h2>
-        <p>If you buy or restore Studio, the viewer sends your license token to the Sociobot billing API. It checks whether the license is active. Capsule contents and case labels are never included. Sociobot/Dodo, the merchant of record, processes checkout details under its own applicable policies.</p>
+        <p>If you buy or restore Studio, the viewer sends your license token to the Sociobot billing API. It checks whether the license is active. Capsule contents and case labels are never included.</p>
         <h2>Network and analytics</h2>
         <p>Without a license action, standard and demo visits make no telemetry, API, or third-party runtime request. The viewer contacts the Sociobot API only for a license check you initiate or have previously enabled.</p>
         <h2>Your responsibility</h2>
@@ -46,6 +46,7 @@
       </article>
     </main>
     <footer class="site-footer section-shell"><p><span class="brand-mark" aria-hidden="true">ST/C</span> Compare recorded state changes locally.</p><nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-state-transition-capsule">Source on GitHub</a></nav><p>Built by Param Factory · v0.1.0</p></footer>
+    <p class="route-announcer visually-hidden" id="route-announcer" aria-live="polite" aria-atomic="true"></p>
     <script type="module" src="/src/legal.ts"></script>
   </body>
 </html>
