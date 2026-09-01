@@ -154,18 +154,28 @@ test("local routes load without console errors and keep required landmarks", asy
   expect(errors).toEqual([]);
 });
 
-test("used controls meet the 44px target and the page does not overflow", async ({ page }) => {
-  await page.goto("/demo");
-  for (const control of [
-    page.getByRole("button", { name: "Reset demo" }),
-    page.getByRole("link", { name: "Start for real" }),
-    page.getByRole("button", { name: "Load two-run example" }),
-    page.getByRole("button", { name: "Compare again" })
-  ]) {
-    const box = await control.boundingBox();
-    expect(box?.height).toBeGreaterThanOrEqual(44);
+test("all visible links and controls meet the 44px target without overflow", async ({ page }, testInfo) => {
+  for (const path of ["/demo", "/privacy/", "/terms/", "/404.html"]) {
+    await page.goto(path);
+    const controls = page.locator("a, button, label[for]");
+    for (let index = 0; index < await controls.count(); index += 1) {
+      const control = controls.nth(index);
+      if (!await control.isVisible()) continue;
+      const box = await control.boundingBox();
+      const label = (await control.innerText()).trim() || await control.getAttribute("aria-label") || control.toString();
+      expect(box?.width, `${testInfo.project.name} ${path} ${label} width`).toBeGreaterThanOrEqual(44);
+      expect(box?.height, `${testInfo.project.name} ${path} ${label} height`).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${testInfo.project.name} ${path} overflow`).toBe(true);
   }
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test("supporting body copy stays at or above 16px", async ({ page }, testInfo) => {
+  await page.goto("/");
+  for (const selector of [".action-note", ".signal-list li", ".fine-print", ".site-footer"]) {
+    const sizes = await page.locator(selector).evaluateAll((elements) => elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)));
+    expect(sizes.every((size) => size >= 16), `${testInfo.project.name} ${selector}: ${sizes.join(", ")}`).toBe(true);
+  }
 });
 
 test("@claim:license-restore restores a valid Studio license without gating comparison", async ({ page }) => {
@@ -213,6 +223,22 @@ test("has no serious accessibility violations", async ({ page }, testInfo) => {
     const results = await new AxeBuilder({ page }).analyze();
     const serious = results.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical");
     expect(serious, `${testInfo.project.name} ${path}`).toEqual([]);
+
+    const nameResults = await new AxeBuilder({ page }).withRules(["label-content-name-mismatch"]).analyze();
+    expect(nameResults.violations, `${testInfo.project.name} ${path} accessible-name match`).toEqual([]);
+  }
+});
+
+test("install and copy controls include their visible labels in their accessible names", async ({ page, context }, testInfo) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  for (const path of ["/", "/demo"]) {
+    await page.goto(path);
+    const install = page.locator(".install-command");
+    await expect(install, `${testInfo.project.name} ${path}`).toHaveAccessibleName("npm i state-transition-capsule Copy");
+    await expect(page.locator("[data-copy-target='api-code']")).toHaveAccessibleName("Copy code");
+    await install.click();
+    await expect(install).toHaveAccessibleName("npm i state-transition-capsule Copied");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("npm install state-transition-capsule");
   }
 });
 
@@ -221,5 +247,18 @@ test("legal pages have one main heading and landmark", async ({ page }) => {
     await page.goto(path);
     await expect(page.locator("main")).toHaveCount(1);
     await expect(page.locator("h1")).toHaveCount(1);
+  }
+});
+
+test("legal pages publish route-specific Open Graph and Twitter metadata", async ({ page }) => {
+  for (const [path, title] of [["/privacy/", "Privacy — State Transition Capsule"], ["/terms/", "Terms — State Transition Capsule"]] as const) {
+    await page.goto(path);
+    await expect(page.locator("meta[property='og:title']")).toHaveAttribute("content", title);
+    await expect(page.locator("meta[property='og:description']")).toHaveAttribute("content", /.+/);
+    await expect(page.locator("meta[property='og:image']")).toHaveAttribute("content", "https://state-transition-capsule.sociobot.in/og-instrument-trace.webp");
+    await expect(page.locator("meta[name='twitter:card']")).toHaveAttribute("content", "summary_large_image");
+    await expect(page.locator("meta[name='twitter:title']")).toHaveAttribute("content", title);
+    await expect(page.locator("meta[name='twitter:description']")).toHaveAttribute("content", /.+/);
+    await expect(page.locator("meta[name='twitter:image']")).toHaveAttribute("content", "https://state-transition-capsule.sociobot.in/og-instrument-trace.webp");
   }
 });
