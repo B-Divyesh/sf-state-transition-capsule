@@ -1,1 +1,1 @@
-Find the first changed state field between two recorded application runs.
+Find the first changed state field between two recorded runs.

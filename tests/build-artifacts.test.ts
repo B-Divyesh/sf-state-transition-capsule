@@ -22,6 +22,20 @@ function outputPath(url: string): string {
 }
 
 describe("production artifacts", () => {
+  it("@claim:site-build-output writes the static site to dist/site", () => {
+    rmSync(siteRoot, { recursive: true, force: true });
+    expect(existsSync(siteRoot)).toBe(false);
+
+    execFileSync("npm", ["run", "build:site"], { cwd: resolve("."), stdio: "pipe" });
+
+    expect(existsSync(resolve(siteRoot, "index.html"))).toBe(true);
+    expect(existsSync(resolve(siteRoot, "demo/index.html"))).toBe(true);
+    expect(existsSync(resolve(siteRoot, "privacy/index.html"))).toBe(true);
+    expect(existsSync(resolve(siteRoot, "terms/index.html"))).toBe(true);
+    expect(existsSync(resolve(siteRoot, "404.html"))).toBe(true);
+    expect(existsSync(resolve(siteRoot, "staticwebapp.config.json"))).toBe(true);
+  });
+
   it("precache contains only emitted non-map files (regression for f04ddbaf)", () => {
     const urls = precacheUrls();
     expect(urls).not.toContain("/assets/privacy-CVplLqVl.js");

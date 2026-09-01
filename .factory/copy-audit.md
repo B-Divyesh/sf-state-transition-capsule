@@ -34,11 +34,20 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
 ## README opening
 
 ```text
-15  Record state before and after application events.
+ 7  Record state before and after application events.
 12  Redact secrets, replay transitions, and find the first changed field between runs.
 13  For application developers debugging a second run that fails after persisted state changes.
-15  The browser viewer compares JSON run files locally and does not execute their contents.
+14  The browser viewer compares JSON run files locally and does not execute their contents.
 ```
+
+## README build wording
+
+```text
+16  Build a local tarball from this checkout, then install that exact file in a fresh project.
+ 9  npm run build:site writes the static deployment to dist/site/.
+```
+
+The removed publishing-readiness and factory-workflow statements make no untested release promise. The remaining output sentence maps to `@claim:site-build-output`.
 
 ## Terminology
 

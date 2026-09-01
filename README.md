@@ -12,7 +12,7 @@ Open `/demo` or add `?demo=1`. It loads two report run files in the separate `de
 
 ## Install from this source checkout
 
-Version 0.1.0 is ready to publish but is not yet available from the npm registry. Build a local tarball, then install that exact file in a fresh project:
+Build a local tarball from this checkout, then install that exact file in a fresh project:
 
 ```sh
 npm ci
@@ -97,10 +97,10 @@ npm ci
 npm run dev          # documentation site and comparison viewer
 npm test             # unit, claim, build, browser, and offline checks
 npm run build        # package plus static site in dist/
-npm pack             # ready-to-publish tarball
+npm pack             # create the tested local tarball
 ```
 
-`npm run build:site` writes the static deployment to `dist/site/`. The factory deployment workflow publishes that directory; this repository does not contain deployment credentials.
+`npm run build:site` writes the static deployment to `dist/site/`.
 
 ## License
 

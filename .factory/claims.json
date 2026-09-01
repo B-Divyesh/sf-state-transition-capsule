@@ -56,6 +56,13 @@
     "sandbox": "build from source, load ESM and CommonJS outputs, inspect declarations, and assert no runtime dependency manifest"
   },
   {
+    "id": "site-build-output",
+    "claim": "npm run build:site writes the static site to dist/site.",
+    "where": "README",
+    "test": "npm run test:artifacts -- --testNamePattern @claim:site-build-output",
+    "sandbox": "remove dist/site, run npm run build:site, and assert the home, demo, legal, 404, and deployment configuration files exist under dist/site"
+  },
+  {
     "id": "license-restore",
     "claim": "A valid Studio license enables local history without gating the comparison viewer.",
     "where": "Studio section, terms, README",
