@@ -1,6 +1,41 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { createRecorder, stringifyCapsule } from "../../src";
+
+type ButtonColors = { foreground: string; background: string };
+
+function rgbChannels(color: string): [number, number, number] {
+  const channels = color.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+  if (!channels || channels.length !== 3) throw new Error(`Expected an opaque RGB color, received ${color}`);
+  return channels as [number, number, number];
+}
+
+function relativeLuminance(color: string): number {
+  const linearize = (channel: number) => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  const [redChannel, greenChannel, blueChannel] = rgbChannels(color);
+  const red = linearize(redChannel);
+  const green = linearize(greenChannel);
+  const blue = linearize(blueChannel);
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio({ foreground, background }: ButtonColors): number {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+async function buttonColors(control: Locator): Promise<ButtonColors> {
+  return control.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { foreground: style.color, background: style.backgroundColor };
+  });
+}
 
 function capsuleFile(id: string) {
   return {
@@ -236,6 +271,55 @@ test("has no serious accessibility violations", async ({ page }, testInfo) => {
     const nameResults = await new AxeBuilder({ page }).withRules(["label-content-name-mismatch"]).analyze();
     expect(nameResults.violations, `${testInfo.project.name} ${path} accessible-name match`).toEqual([]);
   }
+});
+
+test("mobile demo and Studio CTAs keep exact AA contrast in every interaction state", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+
+  const controls = [
+    page.getByRole("link", { name: "Try it with sample data" }),
+    page.getByRole("link", { name: "Buy Studio in hosted checkout" })
+  ];
+
+  for (const control of controls) {
+    await control.scrollIntoViewIfNeeded();
+
+    const normal = await buttonColors(control);
+    expect(normal).toEqual({ foreground: "rgb(255, 249, 234)", background: "rgb(169, 58, 34)" });
+    expect(contrastRatio(normal)).toBeCloseTo(6.03, 2);
+    expect(contrastRatio(normal)).toBeGreaterThan(4.5);
+
+    await control.focus();
+    const focused = await buttonColors(control);
+    expect(focused).toEqual(normal);
+    expect(contrastRatio(focused)).toBeGreaterThan(4.5);
+
+    await control.hover();
+    await page.waitForTimeout(220);
+    const hovered = await buttonColors(control);
+    expect(hovered).toEqual({ foreground: "rgb(255, 249, 234)", background: "rgb(142, 47, 29)" });
+    expect(contrastRatio(hovered)).toBeCloseTo(7.76, 2);
+    expect(contrastRatio(hovered)).toBeGreaterThan(4.5);
+
+    const box = await control.boundingBox();
+    if (!box) throw new Error("Expected the primary CTA to have a bounding box");
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    const pressed = await buttonColors(control);
+    expect(pressed).toEqual(hovered);
+    expect(contrastRatio(pressed)).toBeGreaterThan(4.5);
+    await page.mouse.move(0, 0);
+    await page.mouse.up();
+  }
+
+  const results = await new AxeBuilder({ page })
+    .include(".hero .button-primary, .studio-actions .button-primary")
+    .withRules(["color-contrast"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+  expect(results.incomplete).toEqual([]);
 });
 
 test("copy code control includes its visible label in its accessible name", async ({ page, context }, testInfo) => {

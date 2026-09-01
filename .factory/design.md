@@ -8,7 +8,7 @@ Stateful bugs feel invisible until two runs are placed side by side. The interfa
 
 - Background `#F2EBD9` (aged instrument paper); surface `#FFF9EA`; recessed surface `#1E2927`.
 - Text `#182420`; muted text `#56645E`; hairline `#9B9A80`.
-- Signal orange `#C34B2E` with cream contrast `#FFF9EA`; teal `#176B67`; success `#2C6A4F`; warning `#8B5A12`; danger `#A42E28`.
+- Signal orange `#A93A22` with cream contrast `#FFF9EA`; hover orange `#8E2F1D`; teal `#176B67`; success `#2C6A4F`; warning `#8B5A12`; danger `#A42E28`. The primary pairing is 6.03:1, leaving margin above the 4.5:1 text threshold on mobile rendering.
 - Dark treatment is scoped to the diagnostic console rather than a theme toggle: charcoal `#15201E`, panel `#22302D`, pale trace `#F4E9CB`, muted trace `#AAB9AF`. This preserves the single-mode physical-instrument thesis while providing depth.
 - Contrast was selected for 4.5:1 body text minimum. Focus is a 3px orange/cream double ring visible on both treatments.
 

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-type Claim = { id: string; test: string };
+type Claim = { id: string; claim: string; where: string; test: string; sandbox: string };
 
 const root = resolve(".");
 const claims = JSON.parse(readFileSync(resolve(root, ".factory/claims.json"), "utf8")) as Claim[];
@@ -40,5 +40,23 @@ describe("claims manifest", () => {
     for (const claim of claims) {
       expect(tagOccurrences(claim.id), claim.id).toBe(1);
     }
+  });
+
+  it("keeps the review-2 build and tarball wording tied to tested claims", () => {
+    const readme = readFileSync(resolve(root, "README.md"), "utf8");
+    const buildClaim = claims.find((claim) => claim.id === "site-build-output");
+    const tarballClaim = claims.find((claim) => claim.id === "local-tarball-install");
+
+    expect(buildClaim).toEqual({
+      id: "site-build-output",
+      claim: "`npm run build:site` writes the static deployment to `dist/site/`.",
+      where: "README",
+      test: "npm run test:artifacts -- --testNamePattern @claim:site-build-output",
+      sandbox: "remove dist/site, run npm run build:site, and assert the home, demo, legal, 404, and deployment configuration files exist under dist/site"
+    });
+    expect(tarballClaim?.test).toContain("@claim:local-tarball-install");
+    expect(readme).toContain("`npm run build:site` writes the static deployment to `dist/site/`.");
+    expect(readme).toContain("Build a local tarball from this checkout, then install that exact file in a fresh project:");
+    expect(readme).not.toMatch(/ready[- ]to[- ]publish|factory deployment workflow/i);
   });
 });
