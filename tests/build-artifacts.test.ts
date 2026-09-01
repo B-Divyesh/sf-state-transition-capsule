@@ -26,7 +26,11 @@ describe("production artifacts", () => {
     rmSync(siteRoot, { recursive: true, force: true });
     expect(existsSync(siteRoot)).toBe(false);
 
-    execFileSync("npm", ["run", "build:site"], { cwd: resolve("."), stdio: "pipe" });
+    execFileSync("npm", ["run", "build:site"], {
+      cwd: resolve("."),
+      env: { ...process.env, NODE_ENV: "production" },
+      stdio: "pipe"
+    });
 
     expect(existsSync(resolve(siteRoot, "index.html"))).toBe(true);
     expect(existsSync(resolve(siteRoot, "demo/index.html"))).toBe(true);
