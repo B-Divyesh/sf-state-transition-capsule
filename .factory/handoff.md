@@ -1,41 +1,28 @@
-# State Transition Capsule — verification 7 handoff
+# State Transition Capsule — review 3 handoff
 
 ## Result
 
-**PASS.** Candidate `637fa5705b561e3ad2ef602743e36c3dd3cb0d47` and <https://state-transition-capsule.sociobot.in/> satisfy the researched brief and acceptance contract. The 20 mandatory claims, full repository suite, clean package consumer, live product flows, accessibility checks, privacy checks, offline reload, performance budgets, and deployment-identity comparison all pass. No product defect was observed at any severity.
+**FAIL.** This review changed no product code. It added the required independent review record at `.factory/review-3.md` and found one blocking production defect: the visible **Buy Studio in hosted checkout** link returns HTTP 404 with `{"error":"enabled factory product","status":404}`.
 
-The complete independent record is in `.factory/verification-7.md`. Local evidence is under `.factory/evidence/verification-7/`.
+## What was verified
 
-## Verification summary
+- Fresh live browser contexts at 390 × 844 and 1440 × 900 passed the cold first-read gate.
+- The one-click `/demo` flow immediately showed the realistic `$.report.chart` divergence. Its banner, reset action, and normal-storage isolation passed at mobile and desktop sizes.
+- A fresh clone at `/tmp/stc-review3-clone.sUQHsu` ran all 20 `.factory/claims.json` commands successfully, then passed `npm test`, `npm run typecheck`, and `npm run lint`.
+- Root, demo, legal, 404, owned assets, robots, sitemap, and GitHub links were crawled successfully. The hosted checkout was the one failed link.
+- Prior findings F-1-1 through F-1-22 and F-2-1 through F-2-2 were rechecked live and in current source/tests; none regressed.
 
-- `npm ci`: PASS; 100 packages, 0 vulnerabilities.
-- Every command in `.factory/claims.json`: PASS, 20/20.
-- `npm run typecheck`: PASS.
-- `npm run lint`: PASS.
-- `npm test`: PASS — 14 unit/manifest, 10 artifact, 52 browser, and 2 production-offline tests passed; 2 expected development-mode offline tests skipped.
-- `npm run build`: PASS; `dist/package` and `dist/site` produced.
-- Clean offline tarball consumer: PASS for ESM, CommonJS, normal, boundary, invalid, and recovery cases.
-- Live desktop and 390 px: PASS for the first-read gate, one-click isolated demo, keyboard flow, focus, touch targets, responsive layout, reduced motion, and error recovery.
-- Axe: 0 serious/critical findings across five routes at both viewports.
-- Privacy: only same-origin GETs in normal/demo flows; no console or page errors.
-- PWA: service-worker update completed and `/demo` reloaded offline.
-- Lighthouse mobile: 97 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1.8 s, TBT 190 ms, CLS 0.0001.
-- Deployment identity: all 25 public build files match the live bytes.
+## Remaining work
 
-## Endpoint scope
+Configure or replace `https://api.sociobot.in/api/v1/products/state-transition-capsule/checkout` so the Studio CTA reaches a real checkout. Add a non-purchasing deployment link-integrity test that accepts only a successful checkout response or expected redirect. Rerun review 3 after deployment.
 
-The product is a static site and npm library with no owned server endpoint or sign-in. The optional license verifier belongs to the shared Sociobot billing API and is outside the resources this work order permits contacting, so no live 429 allowance was measured. The controlled license claim test passes and verifies the client fallback without gating the free viewer.
-
-## Run locally
+## Review locally
 
 ```sh
 npm ci
 npm test
 npm run typecheck
 npm run lint
-npm run build
 ```
 
-## Known gaps and next steps
-
-No product gap was found in the accepted scope. Registry publication remains a factory-owner action; the package was not published by this verifier.
+The detailed evidence and exact reproduction are in `.factory/review-3.md`.
