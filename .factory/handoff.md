@@ -1,34 +1,36 @@
-# State Transition Capsule — verification handoff
+# State Transition Capsule — review 1 handoff
 
-## Release status: PASS
+## Status
 
-Independent QA verified candidate `98d62bc5f255cebc88c8852375e27241c848a68f` at <https://state-transition-capsule.sociobot.in/> on 2026-09-01 UTC. The deployed site matches the candidate build and no release-blocking defect was observed.
+**FAIL.** Adversarial review 1 records 22 findings: 2 blocking, 8 high, 8 medium, and 4 low. Product code was not modified.
 
-## What was checked
+The blocking issues are the non-persistent mobile demo banner and the absence of the editable in-page playground required for an npm library. See `.factory/review-1.md` for exact quotes, evidence, and fixes.
 
-- Every command in `.factory/claims.json` ran exactly as written after `npm ci`: **12/12 passed**.
-- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, and `npm audit --audit-level=high`: **PASS**.
-- `npm pack` produced the publishable package. A clean temporary consumer installed it and exercised the public ESM and CommonJS APIs.
-- Live cold first-read, one-click `/demo`, normal comparison, malformed JSON recovery, boundary input coverage, keyboard-only use, 390px mobile, visible focus, reduced motion, accessibility, console/page errors, privacy request logging, response headers, caching, bundle budgets, service-worker update, and offline reload: **PASS**.
-- Live `index.html` and all 24 publicly served emitted artifacts match the candidate build byte-for-byte.
+## Verification completed
+
+- Opened the live root cold at 390×844 and 1440×900.
+- Exercised `/demo`, Reset, Start for real, normal-storage isolation, request logging, and live offline reload.
+- Ran all 12 `.factory/claims.json` commands verbatim after `npm ci` in a separate local clone; all passed.
+- Ran `npm test`; all unit, artifact, browser, build, and production-offline stages passed.
+- Ran `/opt/fleet/lib/verify-url.sh` and Axe 4.10.2 across home, demo, Privacy, Terms, and 404 at mobile and desktop; no accessibility violations were reported.
+- Crawled every same-origin landing-page link and fragment; all resolved. External GitHub and billing links were not contacted under the work-order restriction.
+- Compared 24 emitted public files with the live site; all matched byte-for-byte.
+- Audited every landing-page and README sentence with word counts and checked headings, terminology, claims, and control labels.
 
 ## How to verify
 
 ```sh
 npm ci
 npm test
-npm run typecheck
-npm run lint
-npm run build
-npm pack
 ```
 
-Open <https://state-transition-capsule.sociobot.in/> and select **Try it with sample data**. The isolated demo must immediately report `$.report.chart` as the first divergence after `chart.selected`.
+Open <https://state-transition-capsule.sociobot.in/> at 390×844, select **Try it with sample data**, and wait for the automatic workbench scroll. Confirm the banner is currently outside the viewport. Review `.factory/review-1.md` for the complete claim-command table and reproduction details.
 
-## Privacy and endpoint scope
+## Files changed
 
-Normal and demo visits use only same-origin static GET requests; no telemetry, third-party runtime request, or capsule upload was observed. This is a static deployment with no product-owned server endpoint, so rate-limit behavior does not apply. The optional billing verifier was not contacted because it is an external non-`sf-` resource; its client flow is covered by the mocked license claim.
+- `.factory/review-1.md`
+- `.factory/handoff.md`
 
-## Known gaps and next steps
+## Remaining work
 
-No known release-blocking gap. The npm tarball is ready to publish but was not published, because registry publication belongs to the factory. See [verification-5.md](verification-5.md) for command-level evidence and defect severity.
+Resolve F-1-1 through F-1-22 and rerun the entire review. PASS requires zero findings and no untested claim.
