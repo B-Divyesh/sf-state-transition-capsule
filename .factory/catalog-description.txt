@@ -1,1 +1,1 @@
-Find the first changed state field between two recorded runs.
+Compare two recorded runs and find the first changed state field.

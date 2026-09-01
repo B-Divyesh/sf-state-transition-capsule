@@ -1,0 +1,21 @@
+{
+  "viewport": "390x844",
+  "url": "https://state-transition-capsule.sociobot.in/",
+  "foreground": "#fff9ea",
+  "controls": {
+    "Try it with sample data": {
+      "normal": { "background": "#a93a22", "ratio": 6.029689250455815 },
+      "focus": { "background": "#a93a22", "ratio": 6.029689250455815 },
+      "hover": { "background": "#8e2f1d", "ratio": 7.764747109202325 },
+      "active": { "background": "#8e2f1d", "ratio": 7.764747109202325 }
+    },
+    "Buy Studio in hosted checkout": {
+      "normal": { "background": "#a93a22", "ratio": 6.029689250455815 },
+      "focus": { "background": "#a93a22", "ratio": 6.029689250455815 },
+      "hover": { "background": "#8e2f1d", "ratio": 7.764747109202325 },
+      "active": { "background": "#8e2f1d", "ratio": 7.764747109202325 }
+    }
+  },
+  "axeColorContrastViolations": 0,
+  "axeColorContrastIncomplete": 0
+}
