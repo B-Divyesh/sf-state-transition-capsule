@@ -1,36 +1,57 @@
-# State Transition Capsule — review 1 handoff
+# State Transition Capsule — polish 1 handoff
 
-## Status
+## Delivered
 
-**FAIL.** Adversarial review 1 records 22 findings: 2 blocking, 8 high, 8 medium, and 4 low. Product code was not modified.
+Repair commit `7b3b718fb1985b68aca5c1f478c13d27bbd02076` resolves all 22 findings in adversarial review 1. The deployed static site is <https://state-transition-capsule.sociobot.in/>.
 
-The blocking issues are the non-persistent mobile demo banner and the absence of the editable in-page playground required for an npm library. See `.factory/review-1.md` for exact quotes, evidence, and fixes.
+- The one-click `/demo` and `?demo=1` paths use the isolated `demo:` namespace, show a persistent mobile disclosure, and keep Reset demo / Start for real usable.
+- The documentation site now includes an editable in-browser library playground with live package output for comparison, redaction, and replay.
+- `.factory/claims.json` inventories 19 visitor-facing claims. Every claim has exactly one tagged observable test.
+- The registry-install implication was removed. The README documents and the test suite proves a local `npm pack` tarball install in a fresh project.
+- Demo and 404 are real route documents with route-specific title, canonical, Open Graph, and Twitter metadata. Same-site navigation and Back focus the destination `h1` and announce the route.
+- Landing/README terms and controls use plain, consistent wording. The catalog description is verb-first and 73 characters.
 
-## Verification completed
+See `.factory/polish-1.md` for the F-1-1 through F-1-22 mapping and exact evidence.
 
-- Opened the live root cold at 390×844 and 1440×900.
-- Exercised `/demo`, Reset, Start for real, normal-storage isolation, request logging, and live offline reload.
-- Ran all 12 `.factory/claims.json` commands verbatim after `npm ci` in a separate local clone; all passed.
-- Ran `npm test`; all unit, artifact, browser, build, and production-offline stages passed.
-- Ran `/opt/fleet/lib/verify-url.sh` and Axe 4.10.2 across home, demo, Privacy, Terms, and 404 at mobile and desktop; no accessibility violations were reported.
-- Crawled every same-origin landing-page link and fragment; all resolved. External GitHub and billing links were not contacted under the work-order restriction.
-- Compared 24 emitted public files with the live site; all matched byte-for-byte.
-- Audited every landing-page and README sentence with word counts and checked headings, terminology, claims, and control labels.
+## Verification
 
-## How to verify
+From a clean local clone at `/tmp/tmp.UGQkrzdoMU/clone`:
+
+```sh
+npm ci
+# every command listed in .factory/claims.json, run verbatim
+```
+
+All 19 claim commands passed. The fresh install reported 0 vulnerabilities.
+
+In the repair checkout:
+
+```sh
+npm test
+```
+
+Passed: 13 unit/manifest tests, build, 9 artifact tests, 50 browser tests (2 expected development skips), and 2 production offline tests. `npm run typecheck` also passes.
+
+Live verification after deployment:
+
+- `/opt/fleet/lib/verify-url.sh https://state-transition-capsule.sociobot.in/demo /tmp/tmp.wRvAjUxDe8` passed in 837 ms with zero console errors, correct title/lang/landmarks, one `h1`, and no missing image alt text.
+- Production cold checks passed at 390×844 and 1440×900. Evidence screenshots: `/tmp/tmp.wRvAjUxDe8/screenshot-mobile.png` and `/tmp/tmp.wRvAjUxDe8/screenshot-desktop.png`.
+- `/`, `/demo`, `/privacy/`, `/terms/`, and `/404.html` return 200. An unknown route returns the designed `404` page with HTTP 404.
+- Browser Axe integration reported zero serious/critical issues at mobile and desktop.
+- Lighthouse mobile production root: Performance 100, Accessibility 100, LCP 0.2 s, CLS 0, TBT 0 ms. Report: `/tmp/stc-lighthouse.json`.
+- Build output: primary site JavaScript is 21.14 kB raw / 7.63 kB gzip; total deployed artifact size reported by the deployment was 365,094 bytes.
+
+## Run and deploy
 
 ```sh
 npm ci
 npm test
+npm run build
+npm pack
 ```
 
-Open <https://state-transition-capsule.sociobot.in/> at 390×844, select **Try it with sample data**, and wait for the automatic workbench scroll. Confirm the banner is currently outside the viewport. Review `.factory/review-1.md` for the complete claim-command table and reproduction details.
+`npm run build` creates the npm package under `dist/package/` and the static site under `dist/site/`. Publishing to the npm registry remains factory-owned; the checked tarball is ready for that release step.
 
-## Files changed
+## Known gaps
 
-- `.factory/review-1.md`
-- `.factory/handoff.md`
-
-## Remaining work
-
-Resolve F-1-1 through F-1-22 and rerun the entire review. PASS requires zero findings and no untested claim.
+None in the shipped product or review acceptance criteria.
