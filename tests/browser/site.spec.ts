@@ -233,6 +233,7 @@ test("install and copy controls include their visible labels in their accessible
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   for (const path of ["/", "/demo"]) {
     await page.goto(path);
+    await expect(page.locator(".brand"), `${testInfo.project.name} ${path} wordmark`).toHaveAccessibleName("ST/C State Transition Capsule home");
     const install = page.locator(".install-command");
     await expect(install, `${testInfo.project.name} ${path}`).toHaveAccessibleName("npm i state-transition-capsule Copy");
     await expect(page.locator("[data-copy-target='api-code']")).toHaveAccessibleName("Copy code");
