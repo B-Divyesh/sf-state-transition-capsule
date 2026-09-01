@@ -57,8 +57,17 @@ describe("production artifacts", () => {
     expect(config.routes.find((route) => route.route === "/assets/*")?.headers?.["Cache-Control"]).toBe("public, max-age=31536000, immutable");
     expect(config.routes.find((route) => route.route === "/demo")?.rewrite).toBe("/demo/index.html");
     expect(config.globalHeaders["Content-Security-Policy"]).toContain("frame-ancestors 'none'");
+    expect(config.globalHeaders["Content-Security-Policy"]).toContain("connect-src 'self'");
+    expect(config.globalHeaders["Content-Security-Policy"]).not.toContain("api.sociobot.in");
     expect(config.globalHeaders["Permissions-Policy"]).toContain("camera=()");
     expect(config.responseOverrides["404"]?.rewrite).toBe("/404.html");
+  });
+
+  it("keeps operator-gated commerce out of every deployed document", () => {
+    for (const route of ["index.html", "demo/index.html", "privacy/index.html", "terms/index.html", "404.html"]) {
+      const document = readFileSync(resolve(siteRoot, route), "utf8");
+      expect(document, route).not.toMatch(/api\.sociobot\.in|\/checkout|\$39|Buy Studio/i);
+    }
   });
 
   it("preloads the emitted display and data fonts to avoid first-view layout movement", () => {

@@ -80,11 +80,11 @@ Replay calls only the reducer supplied by your application process.
 
 The public API exports `createRecorder`, `compareCapsules`, `replayCapsule`, `parseCapsule`, `stringifyCapsule`, and `validateCapsule`, plus TypeScript types. Run files use the versioned media marker `state-transition-capsule/v1`.
 
-The free package records run files, exports and imports JSON, redacts values, compares state, and replays supplied reducers. Capsule Studio costs $39 once per user for local history and saved comparison labels. The comparison viewer remains available without Studio.
+The free package records run files, exports and imports JSON, redacts values, compares state, and replays supplied reducers. This release offers no Studio registration or checkout link. The browser viewer works without an account.
 
 ## Privacy
 
-Run files may contain sensitive data. Prefer broad redaction rules and inspect exported JSON before sharing it. Redaction replaces values; it is not encryption. The viewer processes run files locally and does not upload their contents. Standard and demo visits make no telemetry, API, or third-party runtime request unless you choose license verification.
+Run files may contain sensitive data. Prefer broad redaction rules and inspect exported JSON before sharing it. Redaction replaces values; it is not encryption. The viewer processes run files locally and does not upload their contents. Standard and demo visits make no telemetry, API, or third-party runtime request. The viewer works offline after the first visit.
 
 Read the site [Privacy policy](https://state-transition-capsule.sociobot.in/privacy/) and [Terms](https://state-transition-capsule.sociobot.in/terms/).
 

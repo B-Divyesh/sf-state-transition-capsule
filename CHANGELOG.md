@@ -4,6 +4,7 @@ All notable changes use this file. The project follows semantic versioning.
 
 ## Unreleased
 
+- Remove the unavailable Studio checkout and billing runtime, show an honest registration status, and keep the free viewer account-free.
 - Repair the production offline shell: precache only final emitted assets, version the cache, and verify installation plus offline reload in Chromium desktop and 390px mobile.
 - Add Azure Static Web Apps cache and response-policy configuration for the deployed documentation site.
 - Add an isolated one-click demo, claim-level regression tests, production artifact validation, and a designed 404 response.

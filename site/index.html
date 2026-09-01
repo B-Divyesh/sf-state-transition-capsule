@@ -51,14 +51,14 @@
         <div class="hero-copy">
           <p class="eyebrow"><span class="status-lamp" aria-hidden="true"></span> Local comparison viewer</p>
           <h1 id="hero-title" tabindex="-1">Find the state change that broke the second run.</h1>
-          <p class="lede">For developers debugging repeat-run failures, it compares two state histories and names the first field that changed.</p>
+          <p class="lede">For developers debugging repeat-run failures, it compares two run files and names the first changed field.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="/demo">Try it with sample data</a>
             <span class="action-note">Loads two sample runs in a separate demo.</span>
             <a class="button button-secondary" href="#api">Read package setup</a>
           </div>
           <ul class="signal-list" aria-label="Product guarantees">
-            <li>Run files stay in this tab by default</li><li>Works offline after the first visit</li><li>Free core tools · Studio costs $39 once</li>
+            <li>Run files stay in this tab</li><li>Works offline after the first visit</li><li>Free viewer · no account required</li>
           </ul>
         </div>
         <figure class="hero-visual">
@@ -102,11 +102,6 @@
 
           <div class="bench-controls">
             <button class="text-button" id="sample-button" type="button">Load two-run example</button>
-            <label class="retention-control" title="Requires Capsule Studio">
-              <input id="remember-toggle" type="checkbox" disabled />
-              <span>Remember on this device</span>
-              <span class="studio-badge">Studio</span>
-            </label>
             <button class="button button-primary compare-button" id="compare-button" type="button" disabled>Compare runs</button>
           </div>
 
@@ -191,32 +186,17 @@ run.record(event, nextState);</code></pre>
       <section class="studio section-shell" id="studio" aria-labelledby="studio-title">
         <div class="studio-panel">
           <div class="studio-copy">
-            <p class="eyebrow">One-time purchase</p>
-            <h2 id="studio-title">Keep a local case history.</h2>
-            <p>The open package records run files, and the viewer compares them. Studio saves labels and history in this browser.</p>
-            <p class="price"><strong>$39</strong> one time · per user</p>
-            <ul><li>Saved local comparison history</li><li>Named incident labels</li></ul>
-            <div class="studio-actions">
-              <a class="button button-primary" href="https://api.sociobot.in/api/v1/products/state-transition-capsule/checkout">Buy Studio in hosted checkout</a>
-              <button class="text-button" id="restore-button" type="button">Restore a license</button>
-            </div>
+            <p class="eyebrow">Free release</p>
+            <h2 id="studio-title">Compare runs without an account.</h2>
+            <p>The open package records run files, and the browser viewer compares them locally.</p>
+            <ul><li>No sign-up</li><li>No payment step</li><li>No run file upload</li></ul>
             <p class="fine-print"><a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a></p>
           </div>
-          <div class="license-console" id="license-console">
+          <div class="status-console" aria-labelledby="registration-state">
             <span class="dial" aria-hidden="true"></span>
-            <p class="panel-kicker">License status</p>
-            <h3 id="license-state">Studio locked</h3>
-            <p id="license-note" role="status" aria-live="polite">The free comparison viewer remains fully available.</p>
-            <form id="license-form" hidden>
-              <label for="license-input">License token</label>
-              <input id="license-input" name="license" autocomplete="off" spellcheck="false" required />
-              <button class="button button-light" type="submit">Verify license</button>
-            </form>
-            <div id="history-panel" hidden>
-              <label for="case-label">Label this comparison</label>
-              <div class="label-row"><input id="case-label" maxlength="80" /><button class="button button-light" id="save-case" type="button">Save case</button></div>
-              <div id="case-history"></div>
-            </div>
+            <p class="panel-kicker">Studio status</p>
+            <h3 id="registration-state">Registration unavailable</h3>
+            <p>New Studio licenses are not offered in this release. No checkout link is shown.</p>
           </div>
         </div>
       </section>

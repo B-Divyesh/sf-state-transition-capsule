@@ -65,7 +65,7 @@ button, .button { min-height: 44px; }
 button { color: inherit; }
 img { display: block; max-width: 100%; }
 :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
-.workbench :focus-visible, .license-console :focus-visible { outline-color: var(--trace); box-shadow: 0 0 0 6px var(--orange); }
+.workbench :focus-visible { outline-color: var(--trace); box-shadow: 0 0 0 6px var(--orange); }
 .skip-link { position: fixed; top: 8px; left: 8px; z-index: 100; padding: 10px 14px; color: var(--trace); background: var(--panel); transform: translateY(-150%); }
 .skip-link:focus { transform: translateY(0); }
 .section-shell { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
@@ -116,7 +116,6 @@ h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .button-secondary:hover { border-color: var(--trace); background: rgb(255 255 255 / 5%); }
 .hero .button-secondary { color: var(--ink); border-color: var(--ink); }
 .hero .button-secondary:hover { border-color: var(--orange-dark); color: var(--ink); background: #e8dfca; }
-.button-light { color: var(--panel); background: var(--trace); border-color: var(--trace); }
 .install-command { display: inline-flex; align-items: center; min-height: 48px; padding: 0; border: 1px solid var(--line); border-radius: 3px; background: rgb(255 249 234 / 45%); cursor: pointer; overflow: hidden; }
 .install-command > span:first-child { padding: 0 14px; font: 400 16px/1 "Plex Mono", monospace; }
 .copy-label { align-self: stretch; display: grid; place-items: center; padding: 0 12px; color: var(--surface); background: var(--ink); font-size: 16px; font-weight: 700; }
@@ -149,9 +148,6 @@ h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .compare-axis i { width: 1px; background: repeating-linear-gradient(to bottom, #809088 0 5px, transparent 5px 10px); }
 .bench-controls { position: relative; display: flex; align-items: center; gap: 24px; padding: 24px 4px 4px; }
 .text-button { min-height: 44px; padding: 0; border: 0; color: inherit; background: transparent; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-.retention-control { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; color: var(--trace-muted); cursor: pointer; }
-.retention-control input { width: 20px; height: 20px; accent-color: var(--orange); }
-.studio-badge { padding: 3px 6px; color: var(--ink); background: #d8bb65; border-radius: 2px; font: 600 10px/1 "Plex Mono", monospace; text-transform: uppercase; }
 .compare-button { margin-left: auto; }
 .bench-message { position: relative; min-height: 24px; padding: 8px 4px 0; color: #93cfb8; font: 400 13px/1.4 "Plex Mono", monospace; }
 .bench-message.error { color: #ffad94; }
@@ -208,27 +204,16 @@ pre { margin: 0; padding: 24px; overflow: auto; font: 400 14px/1.7 "Plex Mono", 
 .studio { padding: 112px 0; }
 .studio-panel { display: grid; grid-template-columns: 1.1fr .9fr; min-height: 500px; border: 2px solid var(--ink); background: var(--surface); box-shadow: 12px 12px 0 #d1c6ae; }
 .studio-copy { padding: clamp(32px, 6vw, 72px); }
-.studio-copy > p:not(.eyebrow, .price, .fine-print) { max-width: 620px; color: var(--muted); font-size: 18px; }
-.price { margin: 28px 0 12px; }.price strong { margin-right: 6px; font-size: 30px; }
+.studio-copy > p:not(.eyebrow, .fine-print) { max-width: 620px; color: var(--muted); font-size: 18px; }
 .studio-copy ul { margin: 18px 0 30px; padding-left: 20px; }.studio-copy li { margin: 8px 0; }
-.studio-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .fine-print { max-width: 670px; margin: 28px 0 0; color: var(--muted); font-size: 16px; }
 .fine-print a { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; margin-inline: 4px; }
-.license-console { position: relative; padding: clamp(32px, 5vw, 60px); color: var(--trace); background: var(--panel); overflow: hidden; }
-.license-console::before { content: ""; position: absolute; inset: 12px; pointer-events: none; border: 1px solid #43564f; }
-.license-console > * { position: relative; }
+.status-console { position: relative; padding: clamp(32px, 5vw, 60px); color: var(--trace); background: var(--panel); overflow: hidden; }
+.status-console::before { content: ""; position: absolute; inset: 12px; pointer-events: none; border: 1px solid #43564f; }
+.status-console > * { position: relative; }
 .dial { display: block; width: 84px; height: 84px; margin: 0 0 42px auto; border: 10px solid #4b5d56; border-radius: 50%; background: radial-gradient(circle, #e28b6f 0 7px, #25332f 8px 22px, #78877f 23px 25px, #25332f 26px); box-shadow: 0 0 0 2px #0d1412; }
-.license-console h3 { font-size: 28px; }
-.license-console > p:not(.panel-kicker) { color: var(--trace-muted); }
-#license-form { margin-top: 24px; }
-#license-form label, #history-panel label { display: block; margin-bottom: 7px; color: var(--trace-muted); font: 400 12px/1.3 "Plex Mono", monospace; }
-#license-form input, #case-label { width: 100%; min-height: 46px; padding: 9px 11px; border: 1px solid #71847c; color: var(--trace); background: #101816; font-family: "Plex Mono", monospace; }
-#license-form button { margin-top: 12px; }
-#history-panel { margin-top: 28px; }
-.label-row { display: flex; gap: 8px; }
-.label-row input { min-width: 0; }
-.history-list { margin: 20px 0 0; padding: 0; list-style: none; font: 400 12px/1.5 "Plex Mono", monospace; }
-.history-list li { padding: 10px 0; border-top: 1px solid #43564f; }
+.status-console h3 { font-size: 28px; }
+.status-console > p:not(.panel-kicker) { color: var(--trace-muted); }
 
 .site-footer { min-height: 110px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 16px; }
 .site-footer p { display: flex; align-items: center; gap: 12px; }
@@ -302,7 +287,7 @@ pre { margin: 0; padding: 24px; overflow: auto; font: 400 14px/1.7 "Plex Mono", 
   #playground-input, #playground-output { min-height: 300px; }
   .api-grid { gap: 42px; }
   pre { padding: 18px 14px; font-size: 12px; }
-  .studio-copy, .license-console { padding: 32px 22px; }
+  .studio-copy, .status-console { padding: 32px 22px; }
   .site-footer { display: block; padding: 28px 0; }
   .site-footer nav { margin-top: 24px; }
   .site-footer > p:last-child { margin-top: 24px; }

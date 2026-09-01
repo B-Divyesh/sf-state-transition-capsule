@@ -82,16 +82,12 @@ test("opens the isolated sample directly with the documented query URL", async (
   await expect(page).toHaveURL("/");
 });
 
-test("@claim:tab-local-storage keeps imported capsules in memory until Studio retention is enabled", async ({ page }) => {
+test("@claim:tab-local-storage keeps imported run files in the current tab only", async ({ page }) => {
   await page.goto("/");
   await page.locator("#baseline-file").setInputFiles(capsuleFile("known-good"));
   await page.locator("#candidate-file").setInputFiles(capsuleFile("changed-run"));
   await expect(page.getByRole("button", { name: "Compare runs" })).toBeEnabled();
-  expect(await page.evaluate(() => ({
-    savedRuns: localStorage.getItem("stc:saved-runs"),
-    history: localStorage.getItem("stc:case-history"),
-    demoKeys: Object.keys(localStorage).filter((key) => key.startsWith("demo:"))
-  }))).toEqual({ savedRuns: null, history: null, demoKeys: [] });
+  expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
 
   await page.reload();
   await expect(page.locator("#baseline-status")).toHaveText("No run file loaded");
@@ -109,7 +105,7 @@ test("@claim:local-processing sends no capsule data off origin", async ({ page }
   expect(unsafeRequests).toEqual([]);
 });
 
-test("@claim:no-telemetry-runtime makes only local static requests without a license action", async ({ page }) => {
+test("@claim:no-telemetry-runtime makes only local static requests", async ({ page }) => {
   const unexpectedRequests: string[] = [];
   page.on("request", (request) => {
     const url = new URL(request.url());
@@ -127,17 +123,21 @@ test("@claim:no-telemetry-runtime makes only local static requests without a lic
   expect(unexpectedRequests).toEqual([]);
 });
 
-test("@claim:studio-price shows the exact one-time Studio price and hosted checkout", async ({ page }) => {
+test("@claim:registration-unavailable removes checkout and leaves the viewer usable without an account", async ({ page }) => {
+  const billingRequests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).hostname === "api.sociobot.in") billingRequests.push(request.url());
+  });
   await page.goto("/");
-  await expect(page.locator(".price")).toHaveText("$39 one time · per user");
-  await expect(page.getByRole("link", { name: "Buy Studio in hosted checkout" })).toHaveAttribute(
-    "href",
-    "https://api.sociobot.in/api/v1/products/state-transition-capsule/checkout"
-  );
+  await expect(page.getByText("Free viewer · no account required")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Registration unavailable" })).toBeVisible();
+  await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
+  await page.getByRole("button", { name: "Load two-run example" }).click();
+  await page.getByRole("button", { name: "Compare runs" }).click();
+  await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
   await page.goto("/terms/");
-  await expect(page.locator("main article p").filter({ hasText: "Capsule Studio costs $39 as a one-time purchase per user." })).toContainText(
-    "Capsule Studio costs $39 as a one-time purchase per user."
-  );
+  await expect(page.getByText("This release does not offer Studio registration or a payment link.", { exact: false })).toBeVisible();
+  expect(billingRequests).toEqual([]);
 });
 
 test("reports an invalid capsule without breaking the workbench", async ({ page }) => {
@@ -147,7 +147,7 @@ test("reports an invalid capsule without breaking the workbench", async ({ page 
   await expect(page.getByRole("button", { name: "Compare runs" })).toBeDisabled();
 });
 
-test("rejects files above the documented 5 MB safety limit", async ({ page }) => {
+test("@claim:file-size-limit rejects files above the documented 5 MB safety limit", async ({ page }) => {
   await page.goto("/");
   await page.locator("#baseline-file").setInputFiles({
     name: "too-large.json",
@@ -222,45 +222,6 @@ test("supporting body copy stays at or above 16px", async ({ page }, testInfo) =
   }
 });
 
-test("@claim:license-restore restores a valid Studio license without gating comparison", async ({ page }) => {
-  const verificationRequests: string[] = [];
-  await page.route("**/products/state-transition-capsule/verify?license=test-token", (route) => route.fulfill({
-    status: 200,
-    contentType: "application/json",
-    body: JSON.stringify({ valid: true, reason: "ok", expires_at: null })
-  }));
-  page.on("request", (request) => {
-    if (request.url().includes("/products/state-transition-capsule/verify")) verificationRequests.push(request.url());
-  });
-
-  await page.goto("/");
-  await page.getByRole("button", { name: "Load two-run example" }).click();
-  await page.getByRole("button", { name: "Compare runs" }).click();
-  await expect(page.getByText("$.report.chart", { exact: true }).first()).toBeVisible();
-  await expect(page.getByLabel("Remember on this device")).toBeDisabled();
-  await page.getByRole("button", { name: "Restore a license" }).click();
-  await page.getByLabel("License token").fill("test-token");
-  await page.getByRole("button", { name: "Verify license" }).click();
-  await expect(page.getByRole("heading", { name: "Studio active" })).toBeVisible();
-  await expect(page.getByLabel("Remember on this device")).toBeEnabled();
-  await page.getByLabel("Remember on this device").check();
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("stc:saved-runs"))).not.toBeNull();
-  await page.getByLabel("Label this comparison").fill("August comparison");
-  await page.getByRole("button", { name: "Save case" }).click();
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("stc:case-history"))).toContain("August comparison");
-  expect(await page.evaluate(() => localStorage.getItem("sb_license:state-transition-capsule"))).toBe("test-token");
-
-  await page.evaluate(() => localStorage.clear());
-  await page.goto("/?license=test-token");
-  await expect(page).toHaveURL("/");
-  await expect(page.getByRole("heading", { name: "Studio active" })).toBeVisible();
-  expect(await page.evaluate(() => localStorage.getItem("sb_license:state-transition-capsule"))).toBe("test-token");
-  expect(verificationRequests).toEqual([
-    "https://api.sociobot.in/api/v1/products/state-transition-capsule/verify?license=test-token",
-    "https://api.sociobot.in/api/v1/products/state-transition-capsule/verify?license=test-token"
-  ]);
-});
-
 test("has no serious accessibility violations", async ({ page }, testInfo) => {
   for (const path of ["/", "/demo"]) {
     await page.goto(path);
@@ -273,15 +234,12 @@ test("has no serious accessibility violations", async ({ page }, testInfo) => {
   }
 });
 
-test("mobile demo and Studio CTAs keep exact AA contrast in every interaction state", async ({ page }) => {
+test("mobile primary CTA keeps exact AA contrast in every interaction state", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
 
-  const controls = [
-    page.getByRole("link", { name: "Try it with sample data" }),
-    page.getByRole("link", { name: "Buy Studio in hosted checkout" })
-  ];
+  const controls = [page.getByRole("link", { name: "Try it with sample data" })];
 
   for (const control of controls) {
     await control.scrollIntoViewIfNeeded();
@@ -315,7 +273,7 @@ test("mobile demo and Studio CTAs keep exact AA contrast in every interaction st
   }
 
   const results = await new AxeBuilder({ page })
-    .include(".hero .button-primary, .studio-actions .button-primary")
+    .include(".hero .button-primary")
     .withRules(["color-contrast"])
     .analyze();
   expect(results.violations).toEqual([]);

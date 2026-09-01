@@ -23,14 +23,14 @@
   {
     "id": "offline-reload",
     "claim": "Works offline after the first visit.",
-    "where": "landing facts, README",
+    "where": "landing facts, privacy page, README",
     "test": "npm run build && npm run test:e2e:production -- --grep @claim:offline-reload",
     "sandbox": "fresh browser-owned context; await service-worker activation and control, go offline, reload /demo, and assert the comparison result"
   },
   {
     "id": "redaction",
     "claim": "Configured fields are redacted before state, event, and metadata values enter a run file.",
-    "where": "landing page, README",
+    "where": "landing page, privacy page, README",
     "test": "npm run test:unit -- --testNamePattern @claim:redaction",
     "sandbox": "record known secrets with exact and wildcard paths; assert run file output is redacted and source input is unchanged"
   },
@@ -63,32 +63,25 @@
     "sandbox": "remove dist/site, run npm run build:site, and assert the home, demo, legal, 404, and deployment configuration files exist under dist/site"
   },
   {
-    "id": "license-restore",
-    "claim": "A valid Studio license enables local history without gating the comparison viewer.",
-    "where": "Studio section, terms, README",
-    "test": "npm run test:e2e -- --grep @claim:license-restore",
-    "sandbox": "mock the documented Sociobot verification response, restore a token, and assert Studio history and the free comparison control"
-  },
-  {
     "id": "tab-local-storage",
-    "claim": "Imported run files stay in the current tab unless Studio local retention is enabled.",
-    "where": "landing facts, comparison viewer, privacy page, README",
+    "claim": "Imported run files stay in the current browser tab and are not written to local storage.",
+    "where": "landing facts, comparison viewer, privacy page",
     "test": "npm run test:e2e -- --grep @claim:tab-local-storage",
-    "sandbox": "fresh browser context; import two valid run files without a license, assert no storage keys, reload, and assert both import bays are empty"
+    "sandbox": "fresh browser context; import two valid run files, assert no storage keys, reload, and assert both import bays are empty"
   },
   {
     "id": "no-telemetry-runtime",
-    "claim": "Without a license action, standard and demo visits make no telemetry, API, or third-party runtime request.",
+    "claim": "Standard and demo visits make no telemetry, API, or third-party runtime request.",
     "where": "privacy page, README",
     "test": "npm run test:e2e -- --grep @claim:no-telemetry-runtime",
-    "sandbox": "fresh browser context with no license; compare bundled sample on / and /demo while recording requests, allowing only same-origin GET navigations and static assets"
+    "sandbox": "fresh browser context; compare bundled sample on / and /demo while recording requests, allowing only same-origin GET navigations and static assets"
   },
   {
-    "id": "studio-price",
-    "claim": "Capsule Studio costs $39 as a one-time purchase per user.",
-    "where": "landing facts, Studio section, terms, README",
-    "test": "npm run test:e2e -- --grep @claim:studio-price",
-    "sandbox": "fresh browser context; assert the landing price, exact hosted checkout URL, and matching terms disclosure"
+    "id": "registration-unavailable",
+    "claim": "This release offers no Studio registration or checkout link, and the comparison viewer works without an account.",
+    "where": "landing facts, availability section, terms, README",
+    "test": "npm run test:e2e -- --grep @claim:registration-unavailable",
+    "sandbox": "fresh browser context; assert the unavailable status, absence of checkout links and billing requests, then complete the sample comparison"
   },
   {
     "id": "recording",
@@ -107,7 +100,7 @@
   {
     "id": "viewer-does-not-execute-capsules",
     "claim": "The viewer handles run file text as data; it does not run scripts or make external changes.",
-    "where": "README",
+    "where": "terms, README",
     "test": "npm run test:e2e -- --grep @claim:viewer-does-not-execute-capsules",
     "sandbox": "import run files containing script-like strings in a fresh browser context and assert no script marker, network request, or external action occurs"
   },
@@ -138,5 +131,12 @@
     "where": "README",
     "test": "npm run test:artifacts -- --testNamePattern @claim:node-20",
     "sandbox": "inspect the published package manifest and assert its Node engine range is >=20"
+  },
+  {
+    "id": "file-size-limit",
+    "claim": "The comparison viewer rejects run files larger than 5 MB and remains usable.",
+    "where": "comparison viewer error",
+    "test": "npm run test:e2e -- --grep @claim:file-size-limit",
+    "sandbox": "fresh browser context; import a 5 MB plus one byte file, assert the exact error, and confirm comparison stays disabled"
   }
 ]

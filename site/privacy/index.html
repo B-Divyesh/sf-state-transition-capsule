@@ -8,14 +8,14 @@
     <link rel="canonical" href="https://state-transition-capsule.sociobot.in/privacy/" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Privacy — State Transition Capsule" />
-    <meta property="og:description" content="How State Transition Capsule handles capsule files, local data, and license checks." />
+    <meta property="og:description" content="How State Transition Capsule handles run files, local data, and network requests." />
     <meta property="og:url" content="https://state-transition-capsule.sociobot.in/privacy/" />
     <meta property="og:image" content="https://state-transition-capsule.sociobot.in/og-instrument-trace.webp" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Privacy — State Transition Capsule" />
-    <meta name="twitter:description" content="How State Transition Capsule handles capsule files, local data, and license checks." />
+    <meta name="twitter:description" content="How State Transition Capsule handles run files, local data, and network requests." />
     <meta name="twitter:image" content="https://state-transition-capsule.sociobot.in/og-instrument-trace.webp" />
     <title>Privacy — State Transition Capsule</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -32,17 +32,15 @@
         <p class="eyebrow">Privacy policy</p>
         <h1 tabindex="-1">How State Transition Capsule handles your data</h1>
         <p class="updated">Effective 28 August 2026</p>
-        <p>State Transition Capsule is a local-first developer tool. Capsule files opened in the viewer are parsed and compared in your browser. We do not receive, upload, or inspect their contents.</p>
+        <p>State Transition Capsule is a local-first developer tool. Run files opened in the viewer are parsed and compared in your browser. We do not receive, upload, or inspect their contents.</p>
         <h2>Data stored on your device</h2>
-        <p>By default, imported capsules live only in the current tab. Licensed Capsule Studio users can opt in to remembering imported capsules, case labels, and comparison history in browser local storage. License tokens and a time-stamped verification result are also stored locally. You can remove remembered capsules by turning off “Remember on this device,” and clear all data through your browser’s site-data controls.</p>
-        <h2>License verification</h2>
-        <p>If you buy or restore Studio, the viewer sends your license token to the Sociobot billing API. It checks whether the license is active. Capsule contents and case labels are never included.</p>
+        <p>Imported run files stay in memory for the current tab. The viewer does not save them to local storage. Your browser may cache the app and bundled sample for offline use.</p>
         <h2>Network and analytics</h2>
-        <p>Without a license action, standard and demo visits make no telemetry, API, or third-party runtime request. The viewer contacts the Sociobot API only for a license check you initiate or have previously enabled.</p>
+        <p>Standard and demo visits make no telemetry, API, or third-party runtime request.</p>
         <h2>Your responsibility</h2>
-        <p>Capsules can contain personal data or credentials. Configure redaction before capture, inspect JSON before sharing it, and set a retention limit appropriate to your application. Redaction replaces values; it is not encryption.</p>
+        <p>Run files can contain personal data or credentials. Configure redaction before capture, inspect JSON before sharing it, and set a retention limit appropriate to your application. Redaction replaces values; it is not encryption.</p>
         <h2>Contact</h2>
-        <p>Questions or deletion requests for billing records can be sent to <a href="mailto:support@sociobot.in">support@sociobot.in</a>.</p>
+        <p>Questions can be sent to <a href="mailto:support@sociobot.in">support@sociobot.in</a>.</p>
       </article>
     </main>
     <footer class="site-footer section-shell"><p><span class="brand-mark" aria-hidden="true">ST/C</span> Compare recorded state changes locally.</p><nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-state-transition-capsule">Source on GitHub</a></nav><p>Built by Param Factory · v0.1.0</p></footer>

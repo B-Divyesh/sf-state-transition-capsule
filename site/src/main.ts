@@ -10,28 +10,14 @@ import {
   type JSONValue
 } from "../../src";
 
-const PRODUCT_SLUG = "state-transition-capsule";
-const API_BASE = "https://api.sociobot.in/api/v1";
-const LICENSE_KEY = `sb_license:${PRODUCT_SLUG}`;
-const VERDICT_KEY = `${LICENSE_KEY}:verdict`;
-const RUNS_KEY = "stc:saved-runs";
-const HISTORY_KEY = "stc:case-history";
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const DEMO_MODE = location.pathname.replace(/\/$/, "") === "/demo" || new URLSearchParams(location.search).get("demo") === "1";
 const ROUTE_FOCUS_KEY = "stc:route-focus";
 
-function storageKey(key: string): string {
-  return DEMO_MODE ? `demo:${key}` : key;
-}
-
 type Bay = "baseline" | "candidate";
-type CachedVerdict = { valid: boolean; checkedAt: number; reason?: string };
-type CaseRecord = { label: string; path: string; at: string };
 
 let baseline: Capsule | undefined;
 let candidate: Capsule | undefined;
-let latestReport: ComparisonReport | undefined;
-let studioUnlocked = false;
 
 type PlaygroundScenario = {
   initial: JSONValue;
@@ -96,7 +82,6 @@ const compareButton = element<HTMLButtonElement>("compare-button");
 const message = element<HTMLDivElement>("bench-message");
 const emptyResult = element<HTMLDivElement>("empty-result");
 const resultContent = element<HTMLDivElement>("result-content");
-const rememberToggle = element<HTMLInputElement>("remember-toggle");
 
 function makeExamples(): [Capsule, Capsule] {
   const times = ["2026-08-28T09:00:00.000Z", "2026-08-28T09:00:01.000Z", "2026-08-28T09:00:02.000Z"];
@@ -127,17 +112,11 @@ function updateBay(bay: Bay, capsule?: Capsule): void {
   compareButton.disabled = !(baseline && candidate);
 }
 
-function storeRuns(): void {
-  if (!studioUnlocked || !rememberToggle.checked || !baseline || !candidate) return;
-  localStorage.setItem(storageKey(RUNS_KEY), JSON.stringify({ baseline, candidate }));
-}
-
 function assignCapsule(bay: Bay, capsule: Capsule): void {
   if (bay === "baseline") baseline = capsule;
   else candidate = capsule;
   updateBay(bay, capsule);
   setMessage(`${capsule.name} loaded into the ${bay === "baseline" ? "known-good" : "failed"} run file bay.`);
-  storeRuns();
 }
 
 async function readCapsule(file: File, bay: Bay): Promise<void> {
@@ -194,7 +173,7 @@ function renderReport(report: ComparisonReport): void {
   }
 
   const divergence = report.firstDivergence!;
-  kicker.textContent = "First divergence located";
+  kicker.textContent = "First changed field located";
   const title = document.createElement("h3");
   title.id = "result-title";
   title.textContent = divergence.transitionIndex < 0 ? "The runs start from different state." : `State changed after “${divergence.transitionName}”.`;
@@ -213,7 +192,7 @@ function renderReport(report: ComparisonReport): void {
   caption.className = "visually-hidden";
   caption.textContent = "State differences at the first divergent transition";
   const head = document.createElement("thead");
-  head.innerHTML = "<tr><th>Path</th><th>Kind</th><th>Known good</th><th>Changed run</th></tr>";
+  head.innerHTML = "<tr><th>Path</th><th>Kind</th><th>Known good</th><th>Failed run</th></tr>";
   const body = document.createElement("tbody");
   for (const difference of divergence.differences.slice(0, 20)) {
     const row = document.createElement("tr");
@@ -227,7 +206,7 @@ function renderReport(report: ComparisonReport): void {
     appendCell(row, "Known good", expected);
     const actual = document.createElement("code");
     actual.textContent = formatValue(difference.actual);
-    appendCell(row, "Changed", actual);
+    appendCell(row, "Failed run", actual);
     body.append(row);
   }
   table.append(caption, head, body);
@@ -240,12 +219,11 @@ function compareRuns(): void {
   compareButton.textContent = "Comparing…";
   setMessage("Reading retained snapshots locally…");
   requestAnimationFrame(() => {
-    latestReport = compareCapsules(baseline!, candidate!);
-    renderReport(latestReport);
+    const report = compareCapsules(baseline!, candidate!);
+    renderReport(report);
     compareButton.disabled = false;
     compareButton.textContent = "Compare again";
-    setMessage(latestReport.equal ? "Comparison complete. No changed field found." : `Comparison complete. First changed field: ${latestReport.firstDivergence!.path}`);
-    storeRuns();
+    setMessage(report.equal ? "Comparison complete. No changed field found." : `Comparison complete. First changed field: ${report.firstDivergence!.path}`);
   });
 }
 
@@ -281,129 +259,6 @@ function updateConnection(): void {
   const state = element<HTMLParagraphElement>("connection-state");
   state.classList.toggle("offline", !navigator.onLine);
   state.lastElementChild!.textContent = navigator.onLine ? "Local engine ready" : "Offline · still ready";
-}
-
-function setStudio(unlocked: boolean, note?: string): void {
-  studioUnlocked = unlocked;
-  rememberToggle.disabled = !unlocked;
-  element("license-state").textContent = unlocked ? "Studio active" : "Studio locked";
-  element("license-note").textContent = note ?? (unlocked ? "Local history and case labels are available." : "The free comparison viewer remains fully available.");
-  element("history-panel").hidden = !unlocked;
-  if (unlocked) {
-    renderHistory();
-    restoreRuns();
-  }
-}
-
-function readVerdict(): CachedVerdict | undefined {
-  try {
-    const raw = localStorage.getItem(storageKey(VERDICT_KEY));
-    return raw ? JSON.parse(raw) as CachedVerdict : undefined;
-  } catch { return undefined; }
-}
-
-async function verifyLicense(token: string, force = false): Promise<void> {
-  const cached = readVerdict();
-  const fresh = cached && Date.now() - cached.checkedAt < 86_400_000;
-  if (!force && fresh) {
-    setStudio(cached.valid, cached.valid ? undefined : "License no longer active. The free tools remain available.");
-    return;
-  }
-  try {
-    const response = await fetch(`${API_BASE}/products/${PRODUCT_SLUG}/verify?license=${encodeURIComponent(token)}`, { headers: { accept: "application/json" } });
-    if (!response.ok) throw new Error("Verification service unavailable");
-    const result = await response.json() as { valid?: boolean; reason?: string };
-    const verdict: CachedVerdict = { valid: result.valid === true, checkedAt: Date.now(), ...(result.reason ? { reason: result.reason } : {}) };
-    localStorage.setItem(storageKey(VERDICT_KEY), JSON.stringify(verdict));
-    setStudio(verdict.valid, verdict.valid ? undefined : "License no longer active. Check the token or buy a new license.");
-  } catch {
-    setStudio(cached?.valid === true, cached?.valid ? "Studio is active from the last verification. We’ll retry when the service is available." : "Could not verify right now. The free tools remain available.");
-  }
-}
-
-function restoreRuns(): void {
-  if (!studioUnlocked) return;
-  try {
-    const raw = localStorage.getItem(storageKey(RUNS_KEY));
-    if (!raw) return;
-    const saved = JSON.parse(raw) as { baseline?: Capsule; candidate?: Capsule };
-    if (saved.baseline) { baseline = saved.baseline; updateBay("baseline", baseline); }
-    if (saved.candidate) { candidate = saved.candidate; updateBay("candidate", candidate); }
-    if (saved.baseline || saved.candidate) {
-      rememberToggle.checked = true;
-      setMessage("Restored locally saved run files.");
-    }
-  } catch { localStorage.removeItem(storageKey(RUNS_KEY)); }
-}
-
-function renderHistory(): void {
-  const panel = element("case-history");
-  panel.replaceChildren();
-  let history: CaseRecord[] = [];
-  try { history = JSON.parse(localStorage.getItem(storageKey(HISTORY_KEY)) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
-  if (!history.length) {
-    const empty = document.createElement("p");
-    empty.textContent = "No saved cases yet.";
-    panel.append(empty);
-    return;
-  }
-  const list = document.createElement("ul");
-  list.className = "history-list";
-  for (const item of history.slice(0, 8)) {
-    const row = document.createElement("li");
-    row.textContent = `${item.label} · ${item.path} · ${new Date(item.at).toLocaleDateString()}`;
-    list.append(row);
-  }
-  panel.append(list);
-}
-
-function bindLicense(): void {
-  if (DEMO_MODE) {
-    setStudio(false, "Demo mode does not read or save license data.");
-    element<HTMLButtonElement>("restore-button").disabled = true;
-    return;
-  }
-  const params = new URLSearchParams(location.search);
-  const returnedLicense = params.get("license");
-  if (returnedLicense) {
-    localStorage.setItem(storageKey(LICENSE_KEY), returnedLicense);
-    params.delete("license");
-    const query = params.toString();
-    history.replaceState({}, "", `${location.pathname}${query ? `?${query}` : ""}${location.hash}`);
-  }
-  const token = returnedLicense ?? localStorage.getItem(storageKey(LICENSE_KEY));
-  const cached = readVerdict();
-  if (token && cached?.valid) setStudio(true);
-  if (token) void verifyLicense(token, Boolean(returnedLicense));
-
-  const form = element<HTMLFormElement>("license-form");
-  element<HTMLButtonElement>("restore-button").addEventListener("click", () => {
-    form.hidden = false;
-    element<HTMLInputElement>("license-input").focus();
-  });
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const input = element<HTMLInputElement>("license-input");
-    const value = input.value.trim();
-    if (!value) return;
-    localStorage.setItem(storageKey(LICENSE_KEY), value);
-    element("license-note").textContent = "Verifying license…";
-    void verifyLicense(value, true);
-  });
-  element<HTMLButtonElement>("save-case").addEventListener("click", () => {
-    const label = element<HTMLInputElement>("case-label");
-    if (!latestReport || !label.value.trim()) {
-      element("license-note").textContent = "Compare two runs and enter a label before saving.";
-      return;
-    }
-    let history: CaseRecord[] = [];
-    try { history = JSON.parse(localStorage.getItem(storageKey(HISTORY_KEY)) ?? "[]") as CaseRecord[]; } catch { /* ignore */ }
-    history.unshift({ label: label.value.trim(), path: latestReport.firstDivergence?.path ?? "No changed field", at: new Date().toISOString() });
-    localStorage.setItem(storageKey(HISTORY_KEY), JSON.stringify(history.slice(0, 50)));
-    label.value = "";
-    renderHistory();
-    element("license-note").textContent = "Case saved on this device.";
-  });
 }
 
 function bindCopyButtons(): void {
@@ -483,7 +338,6 @@ function bindPlayground(): void {
 
 bindImports();
 bindCopyButtons();
-bindLicense();
 bindPlayground();
 updateConnection();
 window.addEventListener("online", updateConnection);
@@ -496,17 +350,15 @@ function loadSampleRuns(): void {
   setMessage("Example runs loaded. Compare them to locate the first changed field.");
   emptyResult.hidden = false;
   resultContent.hidden = true;
-  storeRuns();
 }
 
 element<HTMLButtonElement>("sample-button").addEventListener("click", loadSampleRuns);
-rememberToggle.addEventListener("change", () => {
-  if (rememberToggle.checked) storeRuns();
-  else {
-    localStorage.removeItem(storageKey(RUNS_KEY));
-    setMessage("Saved run files removed from this device.");
+
+function clearDemoStorage(): void {
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith("demo:")) localStorage.removeItem(key);
   }
-});
+}
 
 if (DEMO_MODE) {
   document.title = "Demo — State Transition Capsule";
@@ -515,12 +367,12 @@ if (DEMO_MODE) {
   loadSampleRuns();
   compareRuns();
   element<HTMLButtonElement>("reset-demo").addEventListener("click", () => {
-    for (const key of [RUNS_KEY, HISTORY_KEY, LICENSE_KEY, VERDICT_KEY]) localStorage.removeItem(`demo:${key}`);
+    clearDemoStorage();
     loadSampleRuns();
     compareRuns();
   });
   element<HTMLAnchorElement>("start-real").addEventListener("click", () => {
-    for (const key of [RUNS_KEY, HISTORY_KEY, LICENSE_KEY, VERDICT_KEY]) localStorage.removeItem(`demo:${key}`);
+    clearDemoStorage();
   });
   document.body.classList.add("demo-mode");
   window.requestAnimationFrame(() => element("workbench-title").scrollIntoView({ block: "start" }));

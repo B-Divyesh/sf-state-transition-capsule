@@ -1,4 +1,4 @@
-# Copy audit — 1 September 2026
+# Copy audit — 1 September 2026, polish round 3
 
 Counts use whitespace-separated words. Code, URLs, navigation labels, and required legal text are excluded. Every landing-page sentence is at or below 22 words. No banned plain-words term appears.
 
@@ -6,11 +6,11 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
 
 ```text
  9  Find the state change that broke the second run.
-17  For developers debugging repeat-run failures, it compares two state histories and names the first field that changed.
+16  For developers debugging repeat-run failures, it compares two run files and names the first changed field.
  8  Loads two sample runs in a separate demo.
- 8  Run files stay in this tab by default.
+ 6  Run files stay in this tab.
  6  Works offline after the first visit.
- 7  Free core tools · Studio costs $39 once.
+ 5  Free viewer · no account required.
 11  The viewer compares two runs and marks the first changed field.
 12  Load a known-good run file and a failed run file.
  7  Files stay in this tab by default.
@@ -24,10 +24,14 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
 11  Set how many recent transitions each run file keeps.
 10  Replace exact or wildcard paths before anything reaches the run file.
 11  Align snapshots in order and stop at the first changed field.
-12  Build this source checkout with npm pack to create a local package tarball.
-12  The open package records run files, and the viewer compares them.
-10  Studio saves labels and history in this browser.
- 6  $39 one time · per user.
+13  Build this source checkout with npm pack to create a local package tarball.
+ 5  Compare runs without an account.
+12  The open package records run files, and the browser viewer compares them locally.
+ 2  No sign-up.
+ 3  No payment step.
+ 4  No run file upload.
+ 9  New Studio licenses are not offered in this release.
+ 5  No checkout link is shown.
  5  Compare recorded state changes locally.
 ```
 
@@ -49,6 +53,20 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
 
 The removed publishing-readiness and factory-workflow statements make no untested release promise. The remaining output sentence maps to `@claim:site-build-output`.
 
+## README availability and privacy wording
+
+```text
+17  The free package records run files, exports and imports JSON, redacts values, compares state, and replays supplied reducers.
+ 9  This release offers no Studio registration or checkout link.
+ 7  The browser viewer works without an account.
+ 6  Run files may contain sensitive data.
+11  Prefer broad redaction rules and inspect exported JSON before sharing it.
+ 7  Redaction replaces values; it is not encryption.
+12  The viewer processes run files locally and does not upload their contents.
+12  Standard and demo visits make no telemetry, API, or third-party runtime request.
+ 7  The viewer works offline after the first visit.
+```
+
 ## Terminology
 
 | Concept | One term used |
@@ -58,11 +76,11 @@ The removed publishing-readiness and factory-workflow statements make no unteste
 | Later failure input | failed run file |
 | Earliest unequal result | first changed field |
 | Browser comparison interface | comparison viewer |
-| Paid local-history tier | Capsule Studio |
+| Operator-gated paid tier | Studio |
 | Isolated bundled sample | demo |
 
 ## First-screen read-aloud
 
-“Find the state change that broke the second run. For developers debugging repeat-run failures, it compares two state histories and names the first field that changed. Try it with sample data.”
+“Find the state change that broke the second run. For developers debugging repeat-run failures, it compares two run files and names the first changed field. Try it with sample data.”
 
 This states the task, audience, result, and first action in one screen.

@@ -31,6 +31,7 @@
     "test:artifacts": "vitest run --root . tests/build-artifacts.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:production": "PLAYWRIGHT_PRODUCTION=1 playwright test tests/browser/offline.spec.ts",
+    "test:links:live": "node tests/live-links.mjs",
     "test": "npm run test:unit && npm run build && npm run test:artifacts && npm run test:e2e && npm run test:e2e:production",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
