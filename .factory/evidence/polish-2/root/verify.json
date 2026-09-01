@@ -1,0 +1,14 @@
+{
+  "url": "https://state-transition-capsule.sociobot.in/",
+  "loadMs": 805,
+  "errors": [],
+  "a11y": {
+    "title": "State Transition Capsule — Find the first changed field",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 3188
+  }
+}

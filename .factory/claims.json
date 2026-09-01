@@ -57,7 +57,7 @@
   },
   {
     "id": "site-build-output",
-    "claim": "npm run build:site writes the static site to dist/site.",
+    "claim": "`npm run build:site` writes the static deployment to `dist/site/`.",
     "where": "README",
     "test": "npm run test:artifacts -- --testNamePattern @claim:site-build-output",
     "sandbox": "remove dist/site, run npm run build:site, and assert the home, demo, legal, 404, and deployment configuration files exist under dist/site"
