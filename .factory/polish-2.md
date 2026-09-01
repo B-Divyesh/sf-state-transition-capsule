@@ -4,7 +4,7 @@ Candidate repaired: `5099aa3310dad5639c0d89d135928ea727a202cb`
 Review baseline: `5ad3ca006861b6cb1d56a854af1688c5c2268765`  
 Repair commits: `28eaf31`, `ab51f86`  
 Deployed URL: <https://state-transition-capsule.sociobot.in/>  
-Deployment id: `098e50bc-4905-4836-b91f-f8c6b8a44c9b`
+Final deployment id: `95d1efff-9376-4dd4-90c1-58b049f5478d`
 
 ## Finding map
 

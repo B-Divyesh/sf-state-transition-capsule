@@ -4,7 +4,7 @@
 
 PASS. All findings in `.factory/review-1.md` and `.factory/review-2.md` are resolved. The repaired static site is deployed at <https://state-transition-capsule.sociobot.in/>.
 
-Repair commits: `28eaf31` and `ab51f86`. Deployment id: `098e50bc-4905-4836-b91f-f8c6b8a44c9b`.
+Repair commits: `28eaf31` and `ab51f86`. Final deployment id: `95d1efff-9376-4dd4-90c1-58b049f5478d`.
 
 ## What changed
 
