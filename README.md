@@ -17,10 +17,11 @@ Build a local tarball from this checkout, then install that exact file in a fres
 ```sh
 npm ci
 npm run build
-npm pack
 mkdir ../stc-consumer && cd ../stc-consumer
+npm pack --pack-destination ../stc-consumer
+cd ../stc-consumer
 npm init -y
-npm install ../state-transition-capsule/state-transition-capsule-0.1.0.tgz
+npm install ./state-transition-capsule-0.1.0.tgz
 ```
 
 The package has no runtime dependencies and supports ESM, CommonJS, and TypeScript declarations.

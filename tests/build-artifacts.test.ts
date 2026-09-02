@@ -7,6 +7,13 @@ import { describe, expect, it } from "vitest";
 
 const siteRoot = resolve("dist/site");
 
+function documentedSourceInstallBlock(): string {
+  const readme = readFileSync(resolve("README.md"), "utf8");
+  const section = readme.match(/## Install from this source checkout\s*\n[\s\S]*?```sh\n([\s\S]*?)\n```/);
+  if (!section?.[1]) throw new Error("README source-install block is missing");
+  return section[1];
+}
+
 function precacheUrls(): string[] {
   const worker = readFileSync(resolve(siteRoot, "sw.js"), "utf8");
   const match = worker.match(/const ASSETS=(\[[^;]+\])/);
@@ -125,18 +132,22 @@ describe("production artifacts", () => {
     }
   });
 
-  it("@claim:local-tarball-install packs, installs offline, and imports the package from a fresh project", () => {
-    const sandbox = mkdtempSync(resolve(tmpdir(), "stc-consumer-"));
-    const packDir = resolve(sandbox, "pack");
-    const consumer = resolve(sandbox, "consumer");
+  it("@claim:local-tarball-install executes the README install block from a clean GitHub-named clone", () => {
+    const sandbox = mkdtempSync(resolve(tmpdir(), "stc-readme-install-"));
+    const clone = resolve(sandbox, "sf-state-transition-capsule");
+    const consumer = resolve(sandbox, "stc-consumer");
     try {
-      mkdirSync(packDir);
-      mkdirSync(consumer);
-      execFileSync("npm", ["pack", "--pack-destination", packDir], { cwd: resolve("."), stdio: "pipe" });
-      const tarball = resolve(packDir, "state-transition-capsule-0.1.0.tgz");
+      execFileSync("git", ["clone", "--quiet", "--no-local", resolve("."), clone], { stdio: "pipe" });
+      const block = documentedSourceInstallBlock();
+      expect(block).toContain("npm pack --pack-destination ../stc-consumer");
+      expect(block).toContain("npm install ./state-transition-capsule-0.1.0.tgz");
+      execFileSync("bash", ["-eu", "-c", block], {
+        cwd: clone,
+        env: { ...process.env, npm_config_offline: "true", npm_config_audit: "false", npm_config_fund: "false" },
+        stdio: "pipe"
+      });
+      const tarball = resolve(consumer, "state-transition-capsule-0.1.0.tgz");
       expect(existsSync(tarball)).toBe(true);
-      writeFileSync(resolve(consumer, "package.json"), JSON.stringify({ name: "fresh-consumer", private: true, type: "module" }));
-      execFileSync("npm", ["install", "--offline", "--ignore-scripts", tarball], { cwd: consumer, stdio: "pipe" });
       const output = execFileSync("node", ["--input-type=module", "--eval", 'import { createRecorder, compareCapsules } from "state-transition-capsule"; const run = createRecorder({ name: "fresh", initialState: { count: 0 } }).capsule(); console.log(typeof compareCapsules + ":" + run.format);'], { cwd: consumer, encoding: "utf8" });
       expect(output.trim()).toBe("function:state-transition-capsule/v1");
     } finally {

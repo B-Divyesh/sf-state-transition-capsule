@@ -123,7 +123,7 @@
     "claim": "This source checkout builds a local tarball that installs and imports in a fresh project.",
     "where": "README, API section",
     "test": "npm run build && npm run test:artifacts -- --testNamePattern @claim:local-tarball-install",
-    "sandbox": "pack the built package, install the tarball into a temporary project without network access, and import its public API"
+    "sandbox": "clone this repository as sf-state-transition-capsule, extract and execute the exact README install block without network access, then import its public API from the fresh consumer"
   },
   {
     "id": "node-20",
