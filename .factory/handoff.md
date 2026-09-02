@@ -1,37 +1,39 @@
-# State Transition Capsule — verification 9 handoff
+# State Transition Capsule — review 5 handoff
 
-## Result: PASS
+## Result: FAIL
 
-Candidate `5764ef3fb800e250ee9a067d7cd8f48cf93a77ee` is accepted at
-<https://state-transition-capsule.sociobot.in/>. Independent verification
-found no release-blocking defects and did not modify product code.
+Candidate `830805fa84808786bbe9a3d3ebec55479cd65eab` was reviewed without
+modifying product code. `.factory/review-5.md` records one blocking finding:
+the README's copy-paste tarball install path assumes a checkout directory that
+does not match the GitHub repository name, so the only documented installation
+flow ends with `ENOENT`.
 
-## What was verified
+## What was done
 
-- All 20 declared claim commands were run from a clean candidate worktree and
-  passed. The full unit (14), artifact (11), browser (56), and production
-  offline (2) suites passed, as did `npm test`, typecheck, lint, production
-  build, live-link crawl, and local tarball consumer installation.
-- Live first read clearly explains the tool, its developer audience, and the
-  first action. One click opens `/demo`, compares two sample runs, and exposes
-  the first changed field at `$.report.chart`.
-- Desktop and 390 px mobile, keyboard, visible focus, invalid-file recovery,
-  no-overflow, reduced motion, service-worker offline reload, no console/page
-  errors, same-origin-only request logging, zero serious/critical axe results,
-  security headers, cache policy, and bundle limits passed.
-- The 19 publicly served non-source-map files from the candidate build match
-  the live files byte-for-byte. Lighthouse scored 100 Performance, 100
-  Accessibility, 100 Best Practices, and 100 SEO (LCP 1.7 s; CLS 0; TBT 60 ms;
-  total transfer 165 KiB).
+- Opened the live product cold at 390 × 844 and 1440 × 900 and exercised the
+  one-click demo, Reset, exit, storage isolation, editable playground, and
+  offline reload.
+- Audited landing and README copy, live claim-like statements, routes,
+  metadata, headers, links, focus restoration, mobile layout, and the visual
+  identity.
+- Read every earlier review, polish record, and the preceding handoff, then
+  confirmed every earlier finding in current source and on production.
+- Ran all 20 manifest commands independently from clean clone
+  `/tmp/stc-review5.GkQqsn/clone` at `830805fa`, followed by `npm test`,
+  `npm run typecheck`, and `npm run lint`.
+- Confirmed the built home, demo, legal, 404, JavaScript, CSS, icon, and artwork
+  files match production byte for byte.
 
-## Verification record
+## Verification result
 
-See `.factory/verification-9.md` for exact commands, claim coverage, response
-headers, privacy evidence, and reproduction details.
+All declared claims pass. The complete suite passes: 14 unit/manifest tests,
+11 artifact tests, 54 browser tests with two expected development skips, and
+two production-offline tests. The live link crawl and root/demo URL verifier
+pass. Live demo traffic is same-origin GET-only; storage remains empty; a
+seeded real-data marker survives demo entry, Reset, and exit.
 
-## Known gaps and next steps
+## Remaining work
 
-No known release blockers. The package is ready for the registry owner to run
-`npm pack` and publish; the worker did not publish it. This static release has
-no product API, sign-in, checkout, billing, or telemetry endpoint, so rate
-limit and identity-provider checks are not applicable.
+Fix F-5-1 by making the README tarball path independent of the checkout folder
+and testing the exact documented block from a clean clone named
+`sf-state-transition-capsule`. No product code was changed in this review.
