@@ -1,42 +1,37 @@
-# State Transition Capsule — polish round 4 handoff
+# State Transition Capsule — verification 9 handoff
 
-## Result
+## Result: PASS
 
-**PASS.** Repair commit `5764ef3fb800e250ee9a067d7cd8f48cf93a77ee` fixes every finding in reviews 1–4 and the prior polish records. It is deployed to <https://state-transition-capsule.sociobot.in/> as Static Web Apps deployment `ba865240-009a-4c43-882e-ce164d31bf72`.
+Candidate `5764ef3fb800e250ee9a067d7cd8f48cf93a77ee` is accepted at
+<https://state-transition-capsule.sociobot.in/>. Independent verification
+found no release-blocking defects and did not modify product code.
 
-## What changed
+## What was verified
 
-- Runtime viewer language now consistently says **run file** and describes the first transition that differs in plain words.
-- README and demo documentation now accurately say that bundled samples stay in memory. Demo entry, reset, and exit clear stale `demo:` keys from local and session storage.
-- File-import failures now give short, actionable JSON/schema/read recovery messages instead of raw parser dumps.
-- The initial-state result now reads “The runs start from different states.”
-- Added browser coverage for terminology, both recovery messages and their word counts, initial-state grammar, and demo-memory isolation through entry, reset, and exit.
-- Updated the catalog description to a 74-character verb-first sentence.
+- All 20 declared claim commands were run from a clean candidate worktree and
+  passed. The full unit (14), artifact (11), browser (56), and production
+  offline (2) suites passed, as did `npm test`, typecheck, lint, production
+  build, live-link crawl, and local tarball consumer installation.
+- Live first read clearly explains the tool, its developer audience, and the
+  first action. One click opens `/demo`, compares two sample runs, and exposes
+  the first changed field at `$.report.chart`.
+- Desktop and 390 px mobile, keyboard, visible focus, invalid-file recovery,
+  no-overflow, reduced motion, service-worker offline reload, no console/page
+  errors, same-origin-only request logging, zero serious/critical axe results,
+  security headers, cache policy, and bundle limits passed.
+- The 19 publicly served non-source-map files from the candidate build match
+  the live files byte-for-byte. Lighthouse scored 100 Performance, 100
+  Accessibility, 100 Best Practices, and 100 SEO (LCP 1.7 s; CLS 0; TBT 60 ms;
+  total transfer 165 KiB).
 
-## Verification
+## Verification record
 
-- Fresh clone: `/tmp/stc-polish4-final.YWUGST/clone` at release-record commit `1422574` (product repair `5764ef3`); `npm ci` completed with 0 vulnerabilities.
-- All 20 `.factory/claims.json` commands passed independently from that clean clone.
-- Local: `npm test`, `npm run typecheck`, `npm run lint`, and `npm pack --json` passed. The browser suite ran 56 desktop/mobile tests; the production offline suite passed for desktop and mobile.
-- Live cold root and demo: `verify-url.sh` passed with HTTP 200, correct titles, `lang=en`, one h1, one main, complete image alt text, and no console errors. Evidence: `.factory/evidence/polish-4/root/verify.json` and `.factory/evidence/polish-4/demo/verify.json`.
-- Live browser check passed the repaired terminology, malformed/schema error text, in-memory demo storage check, editable playground, initial-state wording, legal routes, designed 404, mobile banner, no overflow, and Playwright Axe with 0 serious/critical findings. Evidence: `.factory/evidence/polish-4/live-check.json`.
-- Live offline reload passed with service-worker control and `$.report.chart` visible: `.factory/evidence/polish-4/live-offline.json`.
-- `npm run test:links:live` passed: 5 routes, 12 unique links, 0 checkout links, and a designed HTTP 404.
-- Full finding-to-change-to-evidence map: `.factory/polish-4.md`.
-
-## Run and publish
-
-```sh
-npm ci
-npm test
-npm run typecheck
-npm run lint
-npm run build
-npm pack
-```
-
-`npm pack` produces the ready-to-publish local package tarball. Publishing is intentionally left to the factory registry owner.
+See `.factory/verification-9.md` for exact commands, claim coverage, response
+headers, privacy evidence, and reproduction details.
 
 ## Known gaps and next steps
 
-None. The npm registry publish itself remains a factory-owned release action; do not publish from this repository.
+No known release blockers. The package is ready for the registry owner to run
+`npm pack` and publish; the worker did not publish it. This static release has
+no product API, sign-in, checkout, billing, or telemetry endpoint, so rate
+limit and identity-provider checks are not applicable.
