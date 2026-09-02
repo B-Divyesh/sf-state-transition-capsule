@@ -17,7 +17,7 @@ Build a local tarball from this checkout, then install that exact file in a fres
 ```sh
 npm ci
 npm run build
-mkdir ../stc-consumer && cd ../stc-consumer
+mkdir ../stc-consumer
 npm pack --pack-destination ../stc-consumer
 cd ../stc-consumer
 npm init -y
