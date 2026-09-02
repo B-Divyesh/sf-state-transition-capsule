@@ -1,33 +1,42 @@
-# State Transition Capsule — review 4 handoff
+# State Transition Capsule — polish round 4 handoff
 
 ## Result
 
-**FAIL** for candidate `a0313f0a92dd2f0862244288a56de78f80dcdd0b` at <https://state-transition-capsule.sociobot.in/>. The full adversarial record is in `.factory/review-4.md`. No product code was modified.
+**PASS.** Repair commit `5764ef3fb800e250ee9a067d7cd8f48cf93a77ee` fixes every finding in reviews 1–4 and the prior polish records. It is deployed to <https://state-transition-capsule.sociobot.in/> as Static Web Apps deployment `ba865240-009a-4c43-882e-ce164d31bf72`.
 
-## Verified
+## What changed
 
-- Fresh mobile and desktop contexts passed the cold first-screen check.
-- The one-click demo loaded realistic sample runs and found `$.report.chart`; Reset and Start for real preserved normal storage and cleared demo storage.
-- All 20 declared claim commands passed independently from a clean clone.
-- `npm test`, `npm run typecheck`, `npm run lint`, and `npm run test:links:live` passed.
-- Live offline reload, same-origin-only request logging, route metadata, h1 focus, designed 404, Axe, and `verify-url.sh` checks passed.
-- Nineteen public files from the clean build matched the live deployment byte-for-byte.
+- Runtime viewer language now consistently says **run file** and describes the first transition that differs in plain words.
+- README and demo documentation now accurately say that bundled samples stay in memory. Demo entry, reset, and exit clear stale `demo:` keys from local and session storage.
+- File-import failures now give short, actionable JSON/schema/read recovery messages instead of raw parser dumps.
+- The initial-state result now reads “The runs start from different states.”
+- Added browser coverage for terminology, both recovery messages and their word counts, initial-state grammar, and demo-memory isolation through entry, reset, and exit.
+- Updated the catalog description to a 74-character verb-first sentence.
 
-## Open findings
+## Verification
 
-- `F-1-17` (blocking): runtime copy still uses “run file bay” and “divergent transition,” regressing the established terminology.
-- `F-4-1` (high): README says sample files use `demo:` storage, but the implementation keeps them only in memory.
-- `F-4-2` (medium): malformed and wrong-schema import errors omit a recovery action; the schema error is 51 words.
-- `F-4-3` (minor): the initial-state result says “different state” instead of “different states.”
+- Fresh clone: `/tmp/stc-polish4-clean.c5tZol/clone` at repair commit `5764ef3`; `npm ci` completed with 0 vulnerabilities.
+- All 20 `.factory/claims.json` commands passed independently from that clean clone.
+- Local: `npm test`, `npm run typecheck`, `npm run lint`, and `npm pack --json` passed. The browser suite ran 56 desktop/mobile tests; the production offline suite passed for desktop and mobile.
+- Live cold root and demo: `verify-url.sh` passed with HTTP 200, correct titles, `lang=en`, one h1, one main, complete image alt text, and no console errors. Evidence: `.factory/evidence/polish-4/root/verify.json` and `.factory/evidence/polish-4/demo/verify.json`.
+- Live browser check passed the repaired terminology, malformed/schema error text, in-memory demo storage check, editable playground, initial-state wording, legal routes, designed 404, mobile banner, no overflow, and Playwright Axe with 0 serious/critical findings. Evidence: `.factory/evidence/polish-4/live-check.json`.
+- Live offline reload passed with service-worker control and `$.report.chart` visible: `.factory/evidence/polish-4/live-offline.json`.
+- `npm run test:links:live` passed: 5 routes, 12 unique links, 0 checkout links, and a designed HTTP 404.
+- Full finding-to-change-to-evidence map: `.factory/polish-4.md`.
 
-## How to verify
+## Run and publish
 
 ```sh
 npm ci
 npm test
 npm run typecheck
 npm run lint
-npm run test:links:live
+npm run build
+npm pack
 ```
 
-Then repeat the live mobile import-error, demo-storage, route-focus, request-log, and offline checks described in `.factory/review-4.md`.
+`npm pack` produces the ready-to-publish local package tarball. Publishing is intentionally left to the factory registry owner.
+
+## Known gaps and next steps
+
+None. The npm registry publish itself remains a factory-owned release action; do not publish from this repository.
