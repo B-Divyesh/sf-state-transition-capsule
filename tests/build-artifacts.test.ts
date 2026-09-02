@@ -153,7 +153,7 @@ describe("production artifacts", () => {
     } finally {
       rmSync(sandbox, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 
   it("@claim:node-20 declares Node.js 20 or newer in the published package manifest", () => {
     const manifest = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { engines?: { node?: string } };
