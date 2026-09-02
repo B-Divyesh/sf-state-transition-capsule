@@ -1,39 +1,47 @@
-# State Transition Capsule — review 5 handoff
+# State Transition Capsule — polish 5 handoff
 
-## Result: FAIL
+## Result: PASS
 
-Candidate `830805fa84808786bbe9a3d3ebec55479cd65eab` was reviewed without
-modifying product code. `.factory/review-5.md` records one blocking finding:
-the README's copy-paste tarball install path assumes a checkout directory that
-does not match the GitHub repository name, so the only documented installation
-flow ends with `ENOENT`.
+Repair commits `b5abdcc`, `c61bfeb`, and `ffc5838` resolve F-5-1. The README
+now packages into `../stc-consumer` before entering it, then installs
+`./state-transition-capsule-0.1.0.tgz`. Its claim test clones the repository as
+`sf-state-transition-capsule`, extracts the exact README shell block, runs it
+offline, and imports the installed package.
 
-## What was done
+## Delivered
 
-- Opened the live product cold at 390 × 844 and 1440 × 900 and exercised the
-  one-click demo, Reset, exit, storage isolation, editable playground, and
-  offline reload.
-- Audited landing and README copy, live claim-like statements, routes,
-  metadata, headers, links, focus restoration, mobile layout, and the visual
-  identity.
-- Read every earlier review, polish record, and the preceding handoff, then
-  confirmed every earlier finding in current source and on production.
-- Ran all 20 manifest commands independently from clean clone
-  `/tmp/stc-review5.GkQqsn/clone` at `830805fa`, followed by `npm test`,
-  `npm run typecheck`, and `npm run lint`.
-- Confirmed the built home, demo, legal, 404, JavaScript, CSS, icon, and artwork
-  files match production byte for byte.
+- Preserved the library and local comparison viewer, its mid-century instrument-panel identity, editable demo playground, local-first storage boundary, and PWA offline shell.
+- Updated `.factory/claims.json` so the local-install sandbox describes the exact clean-clone workflow.
+- Updated the catalog line to a verb-first, 68-character description: “Find the first changed field between two recorded application runs.”
+- Deployed `dist/site` to production deployment `82e6e866-8e64-4759-9be7-5535987eccf9` at <https://state-transition-capsule.sociobot.in/>.
+- Recorded the complete finding map and evidence in [polish-5.md](polish-5.md).
 
-## Verification result
+## Exact verification evidence
 
-All declared claims pass. The complete suite passes: 14 unit/manifest tests,
-11 artifact tests, 54 browser tests with two expected development skips, and
-two production-offline tests. The live link crawl and root/demo URL verifier
-pass. Live demo traffic is same-origin GET-only; storage remains empty; a
-seeded real-data marker survives demo entry, Reset, and exit.
+- Clean clone: `/tmp/stc-polish5.t36fZu/sf-state-transition-capsule`; `npm ci`, then every one of the 20 `.factory/claims.json` commands independently: PASS.
+- `npm test`: PASS — 14 unit/manifest, 11 artifact, 54 browser (two expected development skips), and two production-offline tests.
+- `npm run typecheck`, `npm run lint`, and `npm pack --json`: PASS. The packed library is 9,423 bytes and has no runtime dependencies.
+- `npm run test:links:live`: PASS — five routes, 12 unique links, zero checkout links, designed HTTP 404.
+- Cold production verification: [root](evidence/polish-5/root/verify.json) and [demo](evidence/polish-5/demo/verify.json) are HTTP 200 with correct titles, `lang=en`, one h1, one main, alt text, and zero console errors.
+- Live browser/Axe recheck: [live-check.json](evidence/polish-5/live-check.json) reports zero serious/critical violations on all routes; persistent demo controls, reset/exit isolation, editable output, h1 focus, raw metadata, 404, and same-origin GET-only traffic all pass.
+- Live offline reload: [live-offline.json](evidence/polish-5/live-offline.json) restores the demo result with no errors.
+
+## Run and release
+
+```sh
+npm ci
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm pack
+```
+
+`npm run build` emits the npm package under `dist/package` and the deployment
+site under `dist/site`. Do not publish from this checkout; `npm pack` produces
+the tested local tarball for the factory’s release workflow.
 
 ## Remaining work
 
-Fix F-5-1 by making the README tarball path independent of the checkout folder
-and testing the exact documented block from a clean clone named
-`sf-state-transition-capsule`. No product code was changed in this review.
+None. The npm registry publication itself remains a factory release action;
+the documented and tested source-checkout tarball path works now.

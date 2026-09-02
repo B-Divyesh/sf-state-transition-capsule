@@ -1,4 +1,4 @@
-# Copy audit — 2 September 2026, polish round 4
+# Copy audit — 2 September 2026, polish round 5
 
 Counts use whitespace-separated words. Code, URLs, navigation labels, and required legal text are excluded. Every landing-page sentence is at or below 22 words. No banned plain-words term appears.
 
@@ -61,6 +61,8 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
 ```
 
 The in-memory sample sentence maps to `@claim:demo-isolation`; its browser flow checks entry, reset, and exit against local storage, session storage, and IndexedDB. The removed publishing-readiness and factory-workflow statements make no untested release promise. The remaining output sentence maps to `@claim:site-build-output`.
+
+The source-install code block is executed verbatim by `@claim:local-tarball-install`. It creates `../stc-consumer`, packs the tarball there, then installs `./state-transition-capsule-0.1.0.tgz`; no checkout directory name is assumed.
 
 ## README availability and privacy wording
 
