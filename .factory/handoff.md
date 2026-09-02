@@ -15,7 +15,7 @@
 
 ## Verification
 
-- Fresh clone: `/tmp/stc-polish4-clean.c5tZol/clone` at repair commit `5764ef3`; `npm ci` completed with 0 vulnerabilities.
+- Fresh clone: `/tmp/stc-polish4-final.YWUGST/clone` at release-record commit `1422574` (product repair `5764ef3`); `npm ci` completed with 0 vulnerabilities.
 - All 20 `.factory/claims.json` commands passed independently from that clean clone.
 - Local: `npm test`, `npm run typecheck`, `npm run lint`, and `npm pack --json` passed. The browser suite ran 56 desktop/mobile tests; the production offline suite passed for desktop and mobile.
 - Live cold root and demo: `verify-url.sh` passed with HTTP 200, correct titles, `lang=en`, one h1, one main, complete image alt text, and no console errors. Evidence: `.factory/evidence/polish-4/root/verify.json` and `.factory/evidence/polish-4/demo/verify.json`.
