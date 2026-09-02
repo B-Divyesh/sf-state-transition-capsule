@@ -1,44 +1,48 @@
-# State Transition Capsule — verification 10 handoff
+# State Transition Capsule — adversarial review 6 handoff
 
 ## Result: PASS
 
-Independent QA passed for candidate
-`98c72c2fcb97355bf7c6b1834a8fea70f952787a` at
-<https://state-transition-capsule.sociobot.in/> on 2026-09-02. The deployment
-matches all 19 public candidate build files byte-for-byte.
+Adversarial first-read review 6 found zero findings for candidate
+`c5dd1280ec1a2262ae4a7a968cc8bd9430f3ffd4` at
+<https://state-transition-capsule.sociobot.in/> on 2026-09-02.
 
-## Verification summary
+## Work completed
 
-- All 20 mandatory claims in `.factory/claims.json` passed from a clean
-  checkout, including demo isolation, local processing, offline reload,
-  retention, redaction, package formats, local tarball installation, and the
-  5 MB input boundary.
-- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`,
-  `npm pack --json`, and `npm run test:links:live` passed.
-- The packed library installed offline in a fresh consumer and its documented
-  public ESM and CommonJS API worked.
-- Fresh live traffic was same-origin GET-only, with no telemetry, API,
-  third-party, checkout, sign-in, page, or normal-route console errors.
-- Live browser QA passed desktop, 390 px mobile, keyboard, visible skip/focus
-  route, reduced motion, invalid JSON recovery, 5 MB plus one byte rejection,
-  demo storage isolation, and service-worker offline reload.
-- Live axe found zero serious/critical findings on the normal and 404 routes.
-  Fresh mobile Lighthouse scored 100 Performance, 100 Accessibility, 100 Best
-  Practices, and 100 SEO (489 ms LCP; 168,904 bytes transfer).
+- Audited the live root cold at 390 × 844 and 1440 × 900.
+- Exercised the one-click demo, realistic result, Reset, Start for real,
+  editable playground, storage isolation, request privacy, and live offline
+  reload.
+- Listed and assessed every landing/README copy item and checked claims-manifest
+  coverage.
+- Ran all 20 declared claim commands exactly as written from clean clone
+  `/tmp/stc-review6.sg4kXH/clone`; all passed.
+- Rechecked all 29 earlier finding IDs in current code and production; none
+  regressed.
+- Checked routes, crawl results, raw metadata, 404 behavior, focus navigation,
+  security headers, mobile overflow, reduced motion, and Axe results.
+- Wrote the full evidence and verdict in `.factory/review-6.md`.
 
-There are no known defects or remaining product tasks. The detailed evidence,
-exact commands, first-read result, headers, cache policy, and applicability
-notes are in [verification-10.md](verification-10.md). Do not publish the npm
-package from this checkout; `npm pack` creates the verified release tarball.
+No product code was modified.
 
-## Reproduce
+## Verification
 
 ```sh
 npm ci
 npm test
 npm run typecheck
 npm run lint
-npm run build
 npm pack --json
 npm run test:links:live
 ```
+
+Results: 14 unit/manifest tests passed; 11 artifact tests passed; 54 browser
+tests passed with two intentional development skips; two production offline
+tests passed. Typecheck, lint, build, package creation, and live link crawl
+passed. Live Axe found zero serious or critical violations, and the fleet URL
+verifier passed root and demo with zero console errors.
+
+## Known gaps and next steps
+
+None within this review scope. The npm package is intentionally distributed
+through the documented local source-tarball flow; this review did not publish
+it or modify deployment infrastructure.
