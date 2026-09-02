@@ -12,7 +12,7 @@
 - Live functional, metadata, storage, mobile, and Axe check: [live-check.json](evidence/polish-4/live-check.json).
 - Live offline reload: [live-offline.json](evidence/polish-4/live-offline.json).
 
-Every listed claim command passed independently in fresh clone `/tmp/stc-polish4-clean.c5tZol/clone`. `npm test`, `npm run typecheck`, `npm run lint`, `npm pack --json`, and `npm run test:links:live` passed. The local browser suite contains 56 desktop/mobile tests; its production-offline suite contains two tests.
+Every listed claim command passed independently in fresh clone `/tmp/stc-polish4-final.YWUGST/clone` (recorded in `claims.log` plus `claims-tail.log`). `npm test`, `npm run typecheck`, `npm run lint`, `npm pack --json`, and `npm run test:links:live` passed. The local browser suite contains 56 desktop/mobile tests; its production-offline suite contains two tests.
 
 ## Finding map
 
