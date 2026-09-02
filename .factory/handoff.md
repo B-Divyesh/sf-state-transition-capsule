@@ -39,7 +39,7 @@ npm pack
 
 `npm run build` emits the npm package under `dist/package` and the deployment
 site under `dist/site`. Do not publish from this checkout; `npm pack` produces
-the tested local tarball for the factory’s release workflow.
+the tested local tarball.
 
 ## Remaining work
 
