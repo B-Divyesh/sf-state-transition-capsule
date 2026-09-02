@@ -8,5 +8,5 @@
 - Reset: **Reset demo** recreates both bundled run files and removes all `demo:` storage keys.
 - Exit: **Start for real** removes all `demo:` keys and returns to `/`.
 - Mobile boundary: the demo banner stays sticky over the comparison viewer and keeps **Reset demo** and **Start for real** available while scrolling.
-- Isolation: demo mode never reads normal browser storage. Its reserved namespace is `demo:`. The current sample needs no persistence, and reset removes every key in that namespace.
+- Isolation: demo mode never reads normal browser storage. The bundled sample runs stay in memory and are never saved to local storage, session storage, or IndexedDB. Its reserved cleanup namespace is `demo:`; entry, reset, and exit remove every key in that namespace.
 - Network: the sample comparison uses only bundled code and data. It does not call an API or any external origin.

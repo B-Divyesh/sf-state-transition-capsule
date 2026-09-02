@@ -8,7 +8,7 @@ Live viewer: <https://state-transition-capsule.sociobot.in> · isolated sample: 
 
 ## Try the sample
 
-Open `/demo` or add `?demo=1`. It loads two report run files in the separate `demo:` browser-storage namespace. The banner offers **Reset demo** and **Start for real**. The sample identifies `$.report.chart` as the first changed field.
+Open `/demo` or add `?demo=1`. It loads two report run files in memory and does not save them. The banner offers **Reset demo** and **Start for real**. The sample identifies `$.report.chart` as the first changed field.
 
 ## Install from this source checkout
 

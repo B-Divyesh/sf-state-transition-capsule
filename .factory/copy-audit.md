@@ -1,4 +1,4 @@
-# Copy audit — 1 September 2026, polish round 3
+# Copy audit — 2 September 2026, polish round 4
 
 Counts use whitespace-separated words. Code, URLs, navigation labels, and required legal text are excluded. Every landing-page sentence is at or below 22 words. No banned plain-words term appears.
 
@@ -44,6 +44,15 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
 14  The browser viewer compares JSON run files locally and does not execute their contents.
 ```
 
+## README sample wording
+
+```text
+ 5  Open /demo or add ?demo=1.
+13  It loads two report run files in memory and does not save them.
+ 9  The banner offers Reset demo and Start for real.
+ 9  The sample identifies $.report.chart as the first changed field.
+```
+
 ## README build wording
 
 ```text
@@ -51,7 +60,7 @@ Counts use whitespace-separated words. Code, URLs, navigation labels, and requir
  9  npm run build:site writes the static deployment to dist/site/.
 ```
 
-The removed publishing-readiness and factory-workflow statements make no untested release promise. The remaining output sentence maps to `@claim:site-build-output`.
+The in-memory sample sentence maps to `@claim:demo-isolation`; its browser flow checks entry, reset, and exit against local storage, session storage, and IndexedDB. The removed publishing-readiness and factory-workflow statements make no untested release promise. The remaining output sentence maps to `@claim:site-build-output`.
 
 ## README availability and privacy wording
 
@@ -84,3 +93,16 @@ The removed publishing-readiness and factory-workflow statements make no unteste
 “Find the state change that broke the second run. For developers debugging repeat-run failures, it compares two run files and names the first changed field. Try it with sample data.”
 
 This states the task, audience, result, and first action in one screen.
+
+## Runtime and error copy
+
+```text
+ 7         [name] loaded as the known-good/failed run file.
+15         [file] is not valid JSON. Export the run file again, then choose the new file.
+17         [file] is missing the run-file format and required fields. Export it again, then choose the new file.
+10         [file] could not be read. Choose the run file again.
+ 7         The runs start from different states.
+10         Changed fields in the first transition that differs between runs.
+```
+
+All runtime sentences are at or below 22 words. The browser test `uses established run-file terms in viewer messages and result descriptions` rejects `bay`, `capsule`, and `divergent` in comparison-viewer text. The import-error test asserts the recovery actions and both word counts.

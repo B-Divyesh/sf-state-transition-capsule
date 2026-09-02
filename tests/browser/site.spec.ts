@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createRecorder, stringifyCapsule } from "../../src";
 
 type ButtonColors = { foreground: string; background: string };
@@ -37,7 +37,7 @@ async function buttonColors(control: Locator): Promise<ButtonColors> {
   });
 }
 
-function capsuleFile(id: string) {
+function capsuleFile(id: string, initialState: unknown = { count: 0 }) {
   return {
     name: `${id}.json`,
     mimeType: "application/json",
@@ -49,10 +49,35 @@ function capsuleFile(id: string) {
       metadata: {},
       redactions: [],
       retention: { maxTransitions: 10, includeEvents: true },
-      initial: { label: "Initial state", capturedAt: "2026-08-30T00:00:00.000Z", hash: "fixture", state: { count: 0 } },
+      initial: { label: "Initial state", capturedAt: "2026-08-30T00:00:00.000Z", hash: "fixture", state: initialState },
       transitions: []
     }))
   };
+}
+
+async function demoStorageSnapshot(page: Page) {
+  return page.evaluate(async () => {
+    const storageEntries = (storage: Storage) => Array.from({ length: storage.length }, (_, index) => {
+      const key = storage.key(index) ?? "";
+      return [key, storage.getItem(key) ?? ""] as const;
+    });
+    const localEntries = storageEntries(localStorage);
+    const sessionEntries = storageEntries(sessionStorage);
+    const sampleMarkers = ["Quarterly report", "Q2 revenue", "chart.selected", "run_known_good", "run_changed"];
+    const sampleStorageEntries = [...localEntries, ...sessionEntries]
+      .filter(([key, value]) => sampleMarkers.some((marker) => key.includes(marker) || value.includes(marker)));
+    const factory = indexedDB as IDBFactory & { databases?: () => Promise<Array<{ name?: string }>> };
+    const databases = factory.databases ? await factory.databases() : [];
+
+    return {
+      normalLocalMarker: localStorage.getItem("stc:saved-runs"),
+      normalSessionMarker: sessionStorage.getItem("stc:session-marker"),
+      demoLocalKeys: localEntries.filter(([key]) => key.startsWith("demo:")).map(([key]) => key),
+      demoSessionKeys: sessionEntries.filter(([key]) => key.startsWith("demo:")).map(([key]) => key),
+      sampleStorageEntries,
+      indexedDbNames: databases.flatMap(({ name }) => name ? [name] : [])
+    };
+  });
 }
 
 test("@claim:first-divergence loads the demo and locates the first divergent field", async ({ page }) => {
@@ -65,13 +90,43 @@ test("@claim:first-divergence loads the demo and locates the first divergent fie
   await expect(page.getByRole("heading", { name: "Awaiting two run files" })).toBeHidden();
 });
 
-test("@claim:demo-isolation keeps demo storage separate from real data", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("stc:saved-runs", "real-data-marker"));
+test("@claim:demo-isolation keeps demo samples in memory and separate from real data", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (location.pathname === "/demo") {
+      localStorage.setItem("stc:saved-runs", "real-data-marker");
+      sessionStorage.setItem("stc:session-marker", "real-session-marker");
+      localStorage.setItem("demo:stale-local", "discard me");
+      sessionStorage.setItem("demo:stale-session", "discard me");
+    }
+  });
   await page.goto("/demo");
   await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
+  expect(await demoStorageSnapshot(page)).toEqual({
+    normalLocalMarker: "real-data-marker",
+    normalSessionMarker: "real-session-marker",
+    demoLocalKeys: [],
+    demoSessionKeys: [],
+    sampleStorageEntries: [],
+    indexedDbNames: []
+  });
   await page.getByRole("button", { name: "Reset demo" }).click();
-  expect(await page.evaluate(() => localStorage.getItem("stc:saved-runs"))).toBe("real-data-marker");
-  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith("demo:")))).toEqual([]);
+  expect(await demoStorageSnapshot(page)).toEqual({
+    normalLocalMarker: "real-data-marker",
+    normalSessionMarker: "real-session-marker",
+    demoLocalKeys: [],
+    demoSessionKeys: [],
+    sampleStorageEntries: [],
+    indexedDbNames: []
+  });
+  await page.getByRole("link", { name: "Start for real" }).click();
+  await expect(page).toHaveURL("/");
+  const afterExit = await demoStorageSnapshot(page);
+  expect(afterExit.normalLocalMarker).toBe("real-data-marker");
+  expect(afterExit.normalSessionMarker).toBe("real-session-marker");
+  expect(afterExit.demoLocalKeys).toEqual([]);
+  expect(afterExit.demoSessionKeys).toEqual([]);
+  expect(afterExit.sampleStorageEntries).toEqual([]);
+  expect(afterExit.indexedDbNames).toEqual([]);
 });
 
 test("opens the isolated sample directly with the documented query URL", async ({ page }) => {
@@ -140,11 +195,35 @@ test("@claim:registration-unavailable removes checkout and leaves the viewer usa
   expect(billingRequests).toEqual([]);
 });
 
-test("reports an invalid capsule without breaking the workbench", async ({ page }) => {
+test("gives short recovery actions for malformed and incomplete run files", async ({ page }) => {
   await page.goto("/");
   await page.locator("#baseline-file").setInputFiles({ name: "broken.json", mimeType: "application/json", buffer: Buffer.from("{nope") });
-  await expect(page.locator("#bench-message")).toContainText("not valid JSON");
+  const message = page.locator("#bench-message");
+  await expect(message).toHaveText("broken.json is not valid JSON. Export the run file again, then choose the new file.");
+  expect((await message.innerText()).trim().split(/\s+/)).toHaveLength(15);
+  await page.locator("#baseline-file").setInputFiles({ name: "wrong.json", mimeType: "application/json", buffer: Buffer.from("{}") });
+  await expect(message).toHaveText("wrong.json is missing the run-file format and required fields. Export it again, then choose the new file.");
+  const schemaMessage = (await message.innerText()).trim();
+  expect(schemaMessage.split(/\s+/)).toHaveLength(17);
+  expect(schemaMessage).not.toMatch(/capsule/i);
   await expect(page.getByRole("button", { name: "Compare runs" })).toBeDisabled();
+});
+
+test("uses established run-file terms in viewer messages and result descriptions", async ({ page }) => {
+  await page.goto("/demo");
+  await page.locator("#baseline-file").setInputFiles(capsuleFile("known-good"));
+  await expect(page.locator("#bench-message")).toHaveText("known-good loaded as the known-good run file.");
+  await expect(page.locator(".diff-table caption")).toHaveText("Changed fields in the first transition that differs between runs.");
+  const viewerText = await page.locator("#workbench").textContent();
+  expect(viewerText).not.toMatch(/\b(?:bay|capsule|divergent)\b/i);
+});
+
+test("describes unequal initial states with complete grammar", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#baseline-file").setInputFiles(capsuleFile("known-good", { count: 0 }));
+  await page.locator("#candidate-file").setInputFiles(capsuleFile("failed-run", { count: 1 }));
+  await page.getByRole("button", { name: "Compare runs" }).click();
+  await expect(page.getByRole("heading", { name: "The runs start from different states." })).toBeVisible();
 });
 
 test("@claim:file-size-limit rejects files above the documented 5 MB safety limit", async ({ page }) => {

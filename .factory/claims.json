@@ -11,7 +11,7 @@
     "claim": "Demo sample data is separate and is not saved to real user storage.",
     "where": "demo banner, README",
     "test": "npm run test:e2e -- --grep @claim:demo-isolation",
-    "sandbox": "seed a real-data marker, enter /demo, reset, and prove the real marker is unchanged and no demo keys remain"
+    "sandbox": "seed normal and demo markers, enter /demo, reset, and exit; prove normal markers are unchanged while sample data never enters local storage, session storage, or IndexedDB"
   },
   {
     "id": "local-processing",

@@ -116,7 +116,17 @@ function assignCapsule(bay: Bay, capsule: Capsule): void {
   if (bay === "baseline") baseline = capsule;
   else candidate = capsule;
   updateBay(bay, capsule);
-  setMessage(`${capsule.name} loaded into the ${bay === "baseline" ? "known-good" : "failed"} run file bay.`);
+  setMessage(`${capsule.name} loaded as the ${bay === "baseline" ? "known-good" : "failed"} run file.`);
+}
+
+function importErrorMessage(file: File, error: unknown): string {
+  if (error instanceof SyntaxError) {
+    return `${file.name} is not valid JSON. Export the run file again, then choose the new file.`;
+  }
+  if (error instanceof TypeError && error.message.startsWith("Invalid capsule:")) {
+    return `${file.name} is missing the run-file format and required fields. Export it again, then choose the new file.`;
+  }
+  return `${file.name} could not be read. Choose the run file again.`;
 }
 
 async function readCapsule(file: File, bay: Bay): Promise<void> {
@@ -127,8 +137,7 @@ async function readCapsule(file: File, bay: Bay): Promise<void> {
   try {
     assignCapsule(bay, parseCapsule(await file.text()));
   } catch (error) {
-    const detail = error instanceof Error ? error.message : "The file could not be read.";
-    setMessage(`${file.name}: ${detail}`, true);
+    setMessage(importErrorMessage(file, error), true);
   }
 }
 
@@ -176,7 +185,7 @@ function renderReport(report: ComparisonReport): void {
   kicker.textContent = "First changed field located";
   const title = document.createElement("h3");
   title.id = "result-title";
-  title.textContent = divergence.transitionIndex < 0 ? "The runs start from different state." : `State changed after “${divergence.transitionName}”.`;
+  title.textContent = divergence.transitionIndex < 0 ? "The runs start from different states." : `State changed after “${divergence.transitionName}”.`;
   const path = document.createElement("code");
   path.className = "path-readout";
   path.textContent = divergence.path;
@@ -190,7 +199,7 @@ function renderReport(report: ComparisonReport): void {
   table.className = "diff-table";
   const caption = document.createElement("caption");
   caption.className = "visually-hidden";
-  caption.textContent = "State differences at the first divergent transition";
+  caption.textContent = "Changed fields in the first transition that differs between runs.";
   const head = document.createElement("thead");
   head.innerHTML = "<tr><th>Path</th><th>Kind</th><th>Known good</th><th>Failed run</th></tr>";
   const body = document.createElement("tbody");
@@ -355,8 +364,10 @@ function loadSampleRuns(): void {
 element<HTMLButtonElement>("sample-button").addEventListener("click", loadSampleRuns);
 
 function clearDemoStorage(): void {
-  for (const key of Object.keys(localStorage)) {
-    if (key.startsWith("demo:")) localStorage.removeItem(key);
+  for (const storage of [localStorage, sessionStorage]) {
+    for (const key of Object.keys(storage)) {
+      if (key.startsWith("demo:")) storage.removeItem(key);
+    }
   }
 }
 
@@ -364,6 +375,7 @@ if (DEMO_MODE) {
   document.title = "Demo — State Transition Capsule";
   document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", "https://state-transition-capsule.sociobot.in/demo");
   element<HTMLElement>("demo-banner").hidden = false;
+  clearDemoStorage();
   loadSampleRuns();
   compareRuns();
   element<HTMLButtonElement>("reset-demo").addEventListener("click", () => {
